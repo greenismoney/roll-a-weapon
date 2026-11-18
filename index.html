@@ -455,7 +455,7 @@
           </div>
           <div class="world-map-layout">
             <div class="world-map" aria-label="World map. Select a destination to see its rewards and unlock requirements.">
-              <svg class="world-map-art" viewBox="0 0 640 360" role="img" aria-label="A route from the green meadows to the Heavens Arena and Lightning City">
+              <svg class="world-map-art" viewBox="0 0 640 360" role="img" aria-label="A route from the green meadows to Storm City">
                 <defs>
                   <linearGradient id="worldWater" x1="0" y1="0" x2="0.8" y2="1">
                     <stop offset="0" stop-color="#b9e8f2"/>
@@ -475,10 +475,10 @@
                 <path d="M0 278 Q90 234 164 260 T320 248 L300 360H0Z" fill="#a0d18a" opacity=".8"/>
                 <path d="M363 0 Q400 30 385 70 L410 108 Q435 135 467 146 L459 194 Q431 218 402 198 L377 155 Q350 126 365 90 L342 54Z" fill="#c2d6e5"/>
                 <path d="M405 35 L421 11 438 37 430 35 421 23 416 39Z M372 99 L389 73 407 104 396 95 390 101 383 92Z" fill="#fff" opacity=".86"/>
-                <path d="M443 139 Q505 116 590 146 L640 202 606 272 Q536 253 481 277 L437 229Z" fill="#8291a5"/>
+                <path d="M443 139 Q505 104 590 122 L640 202 606 272 Q536 253 481 277 L437 229Z" fill="#8291a5"/>
                 <path d="M462 155 L501 143 533 154 552 139 593 158 622 192 597 218 554 205 526 226 482 211Z" fill="#697b92" opacity=".82"/>
-                <path d="M77 252 C112 236 157 223 192 216 S247 171 282 144 S353 83 390 72 S464 112 499 169 S548 124 570 94" class="map-route"/>
-                <path d="M77 252 C112 236 157 223 192 216 S247 171 282 144 S353 83 390 72 S464 112 499 169 S548 124 570 94" class="map-route-center"/>
+                <path d="M77 252 C112 236 157 223 192 216 S247 171 282 144 C345 170 405 228 461 245 S510 208 531 184 S561 147 576 122" class="map-route"/>
+                <path d="M77 252 C112 236 157 223 192 216 S247 171 282 144 C345 170 405 228 461 245 S510 208 531 184 S561 147 576 122" class="map-route-center"/>
                 <g fill="#4a8a5c" opacity=".86">
                   <path d="M45 171l12-24 12 24h-8l8 13H45l8-13z M82 183l10-20 10 20h-7l7 11H82l7-11z M127 174l12-25 12 25h-8l8 14h-24l8-14z"/>
                   <path d="M181 287l11-22 11 22h-7l7 12h-22l7-12z M233 256l10-20 10 20h-7l7 11h-20l7-11z"/>
@@ -492,8 +492,7 @@
                   <path d="M246 64c0-7 6-13 13-13 5 0 9 2 11 6 2-1 4-2 6-2 7 0 12 5 12 12h-42z"/>
                 </g>
                 <text x="64" y="326" fill="#416d51" font-size="12" font-weight="800" letter-spacing="2">BUNNY MEADOWS</text>
-                <text x="371" y="120" fill="#52677a" font-size="11" font-weight="800" letter-spacing="2">HEAVENS ARENA</text>
-                <text x="505" y="250" fill="#42566d" font-size="11" font-weight="800" letter-spacing="2">LIGHTNING CITY</text>
+                <text x="505" y="310" fill="#42566d" font-size="12" font-weight="800" letter-spacing="2">STORM CITY</text>
               </svg>
               <button type="button" class="map-node" data-map-stage="1" style="--map-x:12%;--map-y:70%" aria-label="Bunny Meadow, Wave 1">
                 <span class="map-node-number">01</span><span class="map-node-mark"></span>
@@ -504,13 +503,13 @@
               <button type="button" class="map-node" data-map-stage="3" style="--map-x:44%;--map-y:40%" aria-label="Bunny Boss's Meadow">
                 <span class="map-node-number">03</span><span class="map-node-mark"></span>
               </button>
-              <button type="button" class="map-node" data-map-stage="4" style="--map-x:61%;--map-y:20%" aria-label="Heavens Arena, Wave 1">
+              <button type="button" class="map-node" data-map-stage="4" style="--map-x:72%;--map-y:68%" aria-label="Storm City, Wave 1">
                 <span class="map-node-number">04</span><span class="map-node-mark"></span>
               </button>
-              <button type="button" class="map-node" data-map-stage="5" style="--map-x:78%;--map-y:47%" aria-label="Lightning City, Wave 2">
+              <button type="button" class="map-node" data-map-stage="5" style="--map-x:83%;--map-y:51%" aria-label="Storm City, Wave 2">
                 <span class="map-node-number">05</span><span class="map-node-mark"></span>
               </button>
-              <button type="button" class="map-node" data-map-stage="6" style="--map-x:89%;--map-y:26%" aria-label="Lightning Queen's Arena">
+              <button type="button" class="map-node" data-map-stage="6" style="--map-x:90%;--map-y:34%" aria-label="Storm City, Lightning Queen">
                 <span class="map-node-number">06</span><span class="map-node-mark"></span>
               </button>
             </div>
@@ -631,8 +630,8 @@
       </div>
       <div class="game-popup" id="airshipPopup" hidden>
         <div class="popup-card">
-          <h2>The Land of the Gods</h2>
-          <p id="airshipMessage">An airship has arrived. It can take you to the Heavens Arena. Do you want to stay or go?</p>
+          <h2>Storm City</h2>
+          <p id="airshipMessage">An airship has arrived. It can take you to Storm City. Do you want to stay or go?</p>
           <div class="popup-actions">
             <button type="button" class="secondary-button" id="stayButton">Stay</button>
             <button type="button" id="travelButton">Yes, I want to come</button>
@@ -642,7 +641,7 @@
       <div class="game-popup" id="stormPopup" hidden>
         <div class="popup-card">
           <h2>Level 2 Storm City!</h2>
-          <p>The airship flies into a storm above the Heavens Arena...</p>
+          <p>The airship flies into a storm above Storm City...</p>
         </div>
       </div>
     </section>
@@ -760,25 +759,25 @@
       },
       {
         stage: 3, chapter: 1, wave: 3, name: "Bunny Boss's Meadow",
-        description: "The Bunny Boss guards the path to the Land of the Gods.",
-        reward: "BOSS REWARD · 5 COINS + HEAVENS ARENA ACCESS",
+        description: "The Bunny Boss guards the path to Storm City.",
+        reward: "BOSS REWARD · 5 COINS + STORM CITY ACCESS",
         requirement: "Clear Bunny Meadow — Wave 2."
       },
       {
-        stage: 4, chapter: 2, wave: 1, name: "Heavens Arena",
-        description: "Enter the arena above the clouds and challenge its lightning fighters.",
+        stage: 4, chapter: 2, wave: 1, name: "Storm City · Wave 1",
+        description: "Arrive in the storm-soaked city and face its lightning fighters.",
         reward: "CLEAR REWARD · 5 COINS + WEAPON ROLL",
-        requirement: "Defeat the Bunny Boss and unlock the airship."
+        requirement: "Defeat the Bunny Boss to unlock Storm City."
       },
       {
-        stage: 5, chapter: 2, wave: 2, name: "Storm City",
-        description: "Battle through rain-soaked streets beneath the Heavens Arena.",
+        stage: 5, chapter: 2, wave: 2, name: "Storm City · Wave 2",
+        description: "Push deeper through the city and face its stronger guards.",
         reward: "CLEAR REWARD · 5 COINS + WEAPON ROLL",
-        requirement: "Clear Heavens Arena — Wave 1."
+        requirement: "Clear Storm City — Wave 1."
       },
       {
-        stage: 6, chapter: 2, wave: 3, name: "Lightning Queen's Arena",
-        description: "Face the Lightning Queen for a chance to claim her legendary spear.",
+        stage: 6, chapter: 2, wave: 3, name: "Storm City · Lightning Queen",
+        description: "Face the Lightning Queen in the heart of the city for a chance to claim her legendary spear.",
         reward: "BOSS REWARD · LIGHTNING QUEEN'S SPEAR (10% CHANCE) OR 50 COINS",
         requirement: "Clear Storm City — Wave 2."
       }
@@ -1336,7 +1335,7 @@
       mainMenu.hidden = true;
       gameHud.hidden = true;
       playHelp.hidden = true;
-      airshipMessage.textContent = "An airship has arrived. It can take you to the Land of the Gods and the Heavens Arena. Do you want to stay or go?";
+      airshipMessage.textContent = "An airship has arrived. It can take you to Storm City. Do you want to stay or go?";
       airshipPopup.hidden = false;
     }
 
@@ -3355,7 +3354,7 @@
       weaponRevealPopup.hidden = true;
       if (wave === 3) {
         finishGame(chapter === 2
-          ? "You defeated the Lightning Queen and completed the Heavens Arena!"
+          ? "You defeated the Lightning Queen and cleared Storm City!"
           : "You defeated the Bunny Boss and completed story mode!");
         return;
       }
