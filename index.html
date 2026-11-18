@@ -1227,11 +1227,12 @@
       const destination = mapDestinations.find((item) => item.stage === selectedMapStage) || mapDestinations[0];
       selectedMapStage = destination.stage;
       const unlocked = destination.stage <= highestUnlockedMapStage;
+      keepPlayingButton.hidden = !hasSavedGame;
       mapProgressText.textContent = `${highestUnlockedMapStage} / ${mapDestinations.length} DESTINATIONS OPEN`;
       for (const node of mapNodes) {
         const stage = Number(node.dataset.mapStage);
         const location = mapDestinations.find((item) => item.stage === stage);
-        const isCurrent = stage === currentStage;
+        const isCurrent = hasSavedGame && stage === currentStage;
         const isUnlocked = stage <= highestUnlockedMapStage;
         node.classList.toggle("locked", !isUnlocked);
         node.classList.toggle("unlocked", isUnlocked);
@@ -1242,9 +1243,13 @@
           `${location.name}. ${isCurrent ? "Current location. " : ""}${isUnlocked ? "Unlocked." : `Locked. ${location.requirement}`} Reward: ${location.reward}.`);
         node.querySelector(".map-node-mark").textContent = isCurrent ? "HERE" : isUnlocked ? "OPEN" : "LOCK";
       }
-      mapDestinationStatus.textContent = destination.stage === currentStage
-        ? "CURRENT LOCATION"
-        : unlocked ? "UNLOCKED · FAST TRAVEL" : "LOCKED DESTINATION";
+      if (hasSavedGame && destination.stage === currentStage) {
+        mapDestinationStatus.textContent = "CURRENT LOCATION";
+      } else if (!hasSavedGame && destination.stage === 1) {
+        mapDestinationStatus.textContent = "STARTING LOCATION";
+      } else {
+        mapDestinationStatus.textContent = unlocked ? "UNLOCKED · FAST TRAVEL" : "LOCKED DESTINATION";
+      }
       mapDestinationStatus.classList.toggle("locked", !unlocked);
       mapDestinationTitle.textContent = destination.name;
       mapDestinationDescription.textContent = destination.description;
@@ -1252,7 +1257,11 @@
       mapUnlockText.hidden = unlocked;
       mapUnlockText.textContent = unlocked ? "" : `Unlock by: ${destination.requirement}`;
       mapTravelButton.disabled = !unlocked;
-      mapTravelButton.textContent = destination.stage === currentStage ? "Replay this location" : "Travel here";
+      if (!hasSavedGame) {
+        mapTravelButton.textContent = "Begin adventure";
+      } else {
+        mapTravelButton.textContent = destination.stage === currentStage ? "Replay this location" : "Travel here";
+      }
     }
 
     function travelToSelectedMapStage() {
@@ -3447,9 +3456,12 @@
     });
     beginGameButton.addEventListener("click", () => {
       weaponPopup.hidden = true;
-      gameHud.hidden = false;
-      playHelp.hidden = false;
-      startWave(1, true);
+      gameHud.hidden = true;
+      playHelp.hidden = true;
+      mainMenu.hidden = false;
+      selectedMapStage = 1;
+      setMusicScene("menu");
+      updateWorldMap();
     });
     keepWeaponButton.addEventListener("click", continueAfterWave);
     weaponRevealContinue.addEventListener("click", continueAfterWave);
