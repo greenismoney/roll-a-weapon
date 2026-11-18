@@ -455,7 +455,7 @@
           </div>
           <div class="world-map-layout">
             <div class="world-map" aria-label="World map. Select a destination to see its rewards and unlock requirements.">
-              <svg class="world-map-art" viewBox="0 0 640 360" role="img" aria-label="A route from the green meadows to Storm City">
+              <svg class="world-map-art" viewBox="0 0 640 360" role="img" aria-label="Routes from Bunny Meadow to Gorilla Jungle and Storm City">
                 <defs>
                   <linearGradient id="worldWater" x1="0" y1="0" x2="0.8" y2="1">
                     <stop offset="0" stop-color="#b9e8f2"/>
@@ -479,6 +479,12 @@
                 <path d="M462 155 L501 143 533 154 552 139 593 158 622 192 597 218 554 205 526 226 482 211Z" fill="#697b92" opacity=".82"/>
                 <path d="M77 252 C112 236 157 223 192 216 S247 171 282 144 C345 170 405 228 461 245 S510 208 531 184 S561 147 576 122" class="map-route"/>
                 <path d="M77 252 C112 236 157 223 192 216 S247 171 282 144 C345 170 405 228 461 245 S510 208 531 184 S561 147 576 122" class="map-route-center"/>
+                <path d="M282 144 C263 194 228 239 174 278 S252 309 301 300 S365 284 405 274" class="map-route"/>
+                <path d="M282 144 C263 194 228 239 174 278 S252 309 301 300 S365 284 405 274" class="map-route-center"/>
+                <path d="M92 271 Q137 239 187 271 T281 270 Q340 250 418 273 L432 360H66Z" fill="#477d50" opacity=".82"/>
+                <path d="M100 291 Q145 255 191 290 T285 286 Q349 270 419 290 L426 360H79Z" fill="#356d47" opacity=".78"/>
+                <path d="M282 144 C263 194 228 239 174 278 S252 309 301 300 S365 284 405 274" class="map-route"/>
+                <path d="M282 144 C263 194 228 239 174 278 S252 309 301 300 S365 284 405 274" class="map-route-center"/>
                 <g fill="#4a8a5c" opacity=".86">
                   <path d="M45 171l12-24 12 24h-8l8 13H45l8-13z M82 183l10-20 10 20h-7l7 11H82l7-11z M127 174l12-25 12 25h-8l8 14h-24l8-14z"/>
                   <path d="M181 287l11-22 11 22h-7l7 12h-22l7-12z M233 256l10-20 10 20h-7l7 11h-20l7-11z"/>
@@ -493,6 +499,7 @@
                 </g>
                 <text x="64" y="326" fill="#416d51" font-size="12" font-weight="800" letter-spacing="2">BUNNY MEADOWS</text>
                 <text x="505" y="310" fill="#42566d" font-size="12" font-weight="800" letter-spacing="2">STORM CITY</text>
+                <text x="175" y="349" fill="#fff" font-size="12" font-weight="800" letter-spacing="2">GORILLA JUNGLE</text>
               </svg>
               <button type="button" class="map-node" data-map-stage="1" style="--map-x:12%;--map-y:70%" aria-label="Bunny Meadow, Wave 1">
                 <span class="map-node-number">01</span><span class="map-node-mark"></span>
@@ -511,6 +518,15 @@
               </button>
               <button type="button" class="map-node" data-map-stage="6" style="--map-x:90%;--map-y:34%" aria-label="Storm City, Lightning Queen">
                 <span class="map-node-number">06</span><span class="map-node-mark"></span>
+              </button>
+              <button type="button" class="map-node" data-map-stage="7" style="--map-x:27%;--map-y:75%" aria-label="Gorilla Jungle, Wave 1">
+                <span class="map-node-number">07</span><span class="map-node-mark"></span>
+              </button>
+              <button type="button" class="map-node" data-map-stage="8" style="--map-x:47%;--map-y:82%" aria-label="Gorilla Jungle, Wave 2">
+                <span class="map-node-number">08</span><span class="map-node-mark"></span>
+              </button>
+              <button type="button" class="map-node" data-map-stage="9" style="--map-x:63%;--map-y:76%" aria-label="Gorilla Jungle, Gorilla Emperor">
+                <span class="map-node-number">09</span><span class="map-node-mark"></span>
               </button>
             </div>
             <aside class="map-destination" aria-live="polite">
@@ -554,7 +570,7 @@
           <h2>Shop</h2>
           <p id="shopCoins">Coins: 0</p>
           <p id="shopHealth">Health upgrade: +10 maximum health</p>
-          <p>Each upgrade costs 5 coins.</p>
+          <p>Each upgrade type costs 10 more coins each time you buy it.</p>
           <button type="button" class="shop-upgrade" id="buyHealthButton">Upgrade health (5 coins)</button>
           <p id="shopLuck">Better weapon chance upgrade: +10% rare/epic chance per purchase</p>
           <button type="button" class="shop-upgrade" id="buyLuckButton">Better weapon chance (+10%) — 20 coins</button>
@@ -619,7 +635,15 @@
       <div class="game-popup" id="gameEndPopup" hidden>
         <div class="popup-card">
           <h2 id="gameEndMessage"></h2>
+          <p id="gameEndDialogue" hidden></p>
           <button type="button" id="restartGame">Play again</button>
+        </div>
+      </div>
+      <div class="game-popup" id="gorillaIntroPopup" hidden>
+        <div class="popup-card">
+          <h2>Gorilla Emperor</h2>
+          <p>"bunny told me you kicked his but so ima kick yours"</p>
+          <button type="button" id="gorillaIntroContinue">Bring it on!</button>
         </div>
       </div>
       <div class="game-popup" id="bossDeathPopup" hidden>
@@ -630,11 +654,11 @@
       </div>
       <div class="game-popup" id="airshipPopup" hidden>
         <div class="popup-card">
-          <h2>Storm City</h2>
-          <p id="airshipMessage">An airship has arrived. It can take you to Storm City. Do you want to stay or go?</p>
+          <h2>Choose Your Path</h2>
+          <p id="airshipMessage">The airship can take you to Storm City, or you can stay and explore Gorilla Jungle beside Bunny Meadow.</p>
           <div class="popup-actions">
-            <button type="button" class="secondary-button" id="stayButton">Stay</button>
-            <button type="button" id="travelButton">Yes, I want to come</button>
+            <button type="button" class="secondary-button" id="stayButton">Stay and enter Gorilla Jungle</button>
+            <button type="button" id="travelButton">Travel to Storm City</button>
           </div>
         </div>
       </div>
@@ -689,6 +713,7 @@
     const shopCoins = document.querySelector("#shopCoins");
     const shopHealth = document.querySelector("#shopHealth");
     const shopLuck = document.querySelector("#shopLuck");
+    const buyHealthButton = document.querySelector("#buyHealthButton");
     const buyLuckButton = document.querySelector("#buyLuckButton");
     const healthDropText = document.querySelector("#healthDropText");
     const weaponPopup = document.querySelector("#weaponPopup");
@@ -710,7 +735,10 @@
     const beginGameButton = document.querySelector("#beginGame");
     const gameEndPopup = document.querySelector("#gameEndPopup");
     const gameEndMessage = document.querySelector("#gameEndMessage");
+    const gameEndDialogue = document.querySelector("#gameEndDialogue");
     const restartButton = document.querySelector("#restartGame");
+    const gorillaIntroPopup = document.querySelector("#gorillaIntroPopup");
+    const gorillaIntroContinue = document.querySelector("#gorillaIntroContinue");
     const bossDeathPopup = document.querySelector("#bossDeathPopup");
     const airshipPopup = document.querySelector("#airshipPopup");
     const airshipMessage = document.querySelector("#airshipMessage");
@@ -742,7 +770,8 @@
       { name: "Base Scythe", rarity: "Rare", damage: 25, range: 72, type: "scythe" },
       { name: "Double-Sided Axe", rarity: "Rare", damage: 30, range: 78, type: "axe" },
       { name: "Hero's Sword", rarity: "Epic", damage: 10, range: 65, type: "heroSword", airDamage: 30 },
-      { name: "Lightning Queen's Spear", rarity: "Epic", damage: 20, lightningDamage: 20, range: 160, type: "lightningSpear" }
+      { name: "Lightning Queen's Spear", rarity: "Epic", damage: 20, lightningDamage: 20, range: 160, type: "lightningSpear" },
+      { name: "Monkey Horn", rarity: "Epic", damage: 20, range: 90, type: "monkeyHorn" }
     ];
     const mapDestinations = [
       {
@@ -759,8 +788,8 @@
       },
       {
         stage: 3, chapter: 1, wave: 3, name: "Bunny Boss's Meadow",
-        description: "The Bunny Boss guards the path to Storm City.",
-        reward: "BOSS REWARD · 5 COINS + STORM CITY ACCESS",
+        description: "The Bunny Boss guards the paths to Storm City and Gorilla Jungle.",
+        reward: "BOSS REWARD · 5 COINS + TWO NEW ROUTES",
         requirement: "Clear Bunny Meadow — Wave 2."
       },
       {
@@ -780,6 +809,24 @@
         description: "Face the Lightning Queen in the heart of the city for a chance to claim her legendary spear.",
         reward: "BOSS REWARD · LIGHTNING QUEEN'S SPEAR (10% CHANCE) OR 50 COINS",
         requirement: "Clear Storm City — Wave 2."
+      },
+      {
+        stage: 7, chapter: 3, wave: 1, name: "Gorilla Jungle · Wave 1",
+        description: "Stay near Bunny Meadow and enter the jungle, where monkey raiders are waiting.",
+        reward: "CLEAR REWARD · 5 COINS + WEAPON ROLL",
+        requirement: "Defeat the Bunny Boss and stay at the airship."
+      },
+      {
+        stage: 8, chapter: 3, wave: 2, name: "Gorilla Jungle · Wave 2",
+        description: "Fight through the gorillas deeper in the jungle.",
+        reward: "CLEAR REWARD · 5 COINS + WEAPON ROLL",
+        requirement: "Clear Gorilla Jungle — Wave 1."
+      },
+      {
+        stage: 9, chapter: 3, wave: 3, name: "Gorilla Emperor",
+        description: "Take on the Gorilla Emperor and his three armored guards.",
+        reward: "BOSS REWARD · MONKEY HORN (10% CHANCE) OR 100 COINS",
+        requirement: "Clear Gorilla Jungle — Wave 2."
       }
     ];
     function readSavedGame() {
@@ -853,10 +900,14 @@
     let weapon = weapons[0];
     let wave = 1;
     let highestUnlockedMapStage = 1;
+    let unlockedMapStages = new Set([1]);
     let selectedMapStage = 1;
     let coins = 0;
     let weaponLuckUpgrades = 0;
+    let healthUpgradeCount = 0;
+    let monkeyHornUnlocked = false;
     let enemies = [];
+    let alliedMonkeys = [];
     let projectiles = [];
     let clouds = [
       { x: 100, y: 90, size: 1, speed: 15 },
@@ -903,23 +954,43 @@
     };
 
     function getRollTable() {
-      const baseBetterChance = spearUnlocked ? 40 : 30;
+      const baseBetterChance = 30 + Number(spearUnlocked) * 10 + Number(monkeyHornUnlocked) * 10;
       const betterChance = Math.min(80, baseBetterChance + weaponLuckUpgrades * 10);
       const betterChanceScale = betterChance / baseBetterChance;
       const commonChance = (100 - betterChance) / 3;
-      return [
+      const options = [
         { name: "Whip", chance: commonChance },
         { name: "Sword", chance: commonChance },
         { name: "Bow and Arrow", chance: commonChance },
         { name: "Base Scythe", chance: 10 * betterChanceScale },
         { name: "Double-Sided Axe", chance: 10 * betterChanceScale },
         { name: "Hero's Sword", chance: 10 * betterChanceScale },
-        { name: "Lightning Queen's Spear", chance: spearUnlocked ? 10 * betterChanceScale : 0 }
+        { name: "Lightning Queen's Spear", chance: spearUnlocked ? 10 * betterChanceScale : 0 },
+        { name: "Monkey Horn", chance: monkeyHornUnlocked ? 10 * betterChanceScale : 0 }
       ];
+      return options;
     }
 
     function createWaveEnemies(number) {
       const spawns = [{ x: 120, y: 435 }, { x: 840, y: 435 }, { x: 700, y: 500 }];
+      if (chapter === 3) {
+        if (number === 1) {
+          return spawns.map((spawn) => ({
+            ...spawn, health: 25, maxHealth: 25, type: "monkey", attackDamage: 30
+          }));
+        }
+        if (number === 2) {
+          return spawns.map((spawn) => ({
+            ...spawn, health: 55, maxHealth: 55, type: "gorilla", attackDamage: 35
+          }));
+        }
+        return [
+          { x: 720, y: 435, health: 320, maxHealth: 320, type: "gorillaEmperor", attackDamage: 50, hornTimer: 4 },
+          { x: 180, y: 430, health: 75, maxHealth: 75, type: "armoredGorilla", attackDamage: 40 },
+          { x: 420, y: 510, health: 75, maxHealth: 75, type: "armoredGorilla", attackDamage: 40 },
+          { x: 840, y: 440, health: 75, maxHealth: 75, type: "armoredGorilla", attackDamage: 40 }
+        ];
+      }
       if (chapter === 2) {
         if (number === 1) {
           return spawns.map((spawn) => ({
@@ -957,8 +1028,11 @@
         weaponName: weapon.name,
         unlockedWeaponNames: [...unlockedWeaponNames],
         spearUnlocked,
+        monkeyHornUnlocked,
         weaponLuckUpgrades,
-        highestMapStage: highestUnlockedMapStage
+        healthUpgradeCount,
+        highestMapStage: highestUnlockedMapStage,
+        unlockedMapStages: [...unlockedMapStages]
       };
       if (!activeUsername || !accounts[activeUsername]) {
         saveWarning = "Sign in to save your progress.";
@@ -983,7 +1057,8 @@
       if (!icon) return;
       const dark = "#273440";
       const metal = unlocked
-        ? item.type === "heroSword" ? "#b493ef" : item.type === "lightningSpear" ? "#68dff5" : "#c4d6df"
+        ? item.type === "heroSword" ? "#b493ef" : item.type === "lightningSpear" ? "#68dff5" :
+          item.type === "monkeyHorn" ? "#f2c65d" : "#c4d6df"
         : dark;
       const wood = unlocked ? "#805633" : dark;
       icon.save();
@@ -1037,6 +1112,22 @@
         icon.lineTo(29, -36);
         icon.lineTo(23, -5);
         icon.lineTo(-4, 20);
+        icon.closePath();
+        icon.fill();
+      } else if (item.type === "monkeyHorn") {
+        icon.lineWidth = 9;
+        icon.strokeStyle = wood;
+        icon.beginPath();
+        icon.moveTo(-30, 28);
+        icon.lineTo(22, -24);
+        icon.stroke();
+        icon.fillStyle = unlocked ? "#f2c65d" : dark;
+        icon.beginPath();
+        icon.moveTo(16, -18);
+        icon.lineTo(27, -43);
+        icon.lineTo(32, -25);
+        icon.lineTo(47, -38);
+        icon.lineTo(39, -15);
         icon.closePath();
         icon.fill();
       } else if (item.type === "scythe") {
@@ -1109,7 +1200,7 @@
         status.className = unlocked ? "inventory-unlocked" : "inventory-locked";
         status.textContent = unlocked
           ? "Unlocked"
-          : item.type === "lightningSpear" ? "Locked — boss drop" : "Locked — roll to unlock";
+          : ["lightningSpear", "monkeyHorn"].includes(item.type) ? "Locked — boss drop" : "Locked — roll to unlock";
         card.append(art, name, rarity, status);
         inventoryItems.append(card);
       }
@@ -1210,6 +1301,7 @@
       wavePopup.hidden = true;
       shopPopup.hidden = true;
       gameEndPopup.hidden = true;
+      gorillaIntroPopup.hidden = true;
       nameScreen.hidden = true;
       mainMenu.hidden = false;
       selectedMapStage = Math.min(getCurrentMapStage(), highestUnlockedMapStage);
@@ -1218,21 +1310,26 @@
     }
 
     function getCurrentMapStage() {
-      return Math.max(1, Math.min(6, (chapter === 2 ? 3 : 0) + wave));
+      return Math.max(1, Math.min(9, (chapter - 1) * 3 + wave));
+    }
+
+    function unlockMapStage(stage) {
+      unlockedMapStages.add(stage);
+      highestUnlockedMapStage = Math.max(highestUnlockedMapStage, stage);
     }
 
     function updateWorldMap() {
       const currentStage = getCurrentMapStage();
       const destination = mapDestinations.find((item) => item.stage === selectedMapStage) || mapDestinations[0];
       selectedMapStage = destination.stage;
-      const unlocked = destination.stage <= highestUnlockedMapStage;
+      const unlocked = unlockedMapStages.has(destination.stage);
       keepPlayingButton.hidden = !hasSavedGame;
-      mapProgressText.textContent = `${highestUnlockedMapStage} / ${mapDestinations.length} DESTINATIONS OPEN`;
+      mapProgressText.textContent = `${unlockedMapStages.size} / ${mapDestinations.length} DESTINATIONS OPEN`;
       for (const node of mapNodes) {
         const stage = Number(node.dataset.mapStage);
         const location = mapDestinations.find((item) => item.stage === stage);
         const isCurrent = hasSavedGame && stage === currentStage;
-        const isUnlocked = stage <= highestUnlockedMapStage;
+        const isUnlocked = unlockedMapStages.has(stage);
         node.classList.toggle("locked", !isUnlocked);
         node.classList.toggle("unlocked", isUnlocked);
         node.classList.toggle("current", isCurrent);
@@ -1265,10 +1362,10 @@
 
     function travelToSelectedMapStage() {
       const destination = mapDestinations.find((item) => item.stage === selectedMapStage);
-      if (!destination || destination.stage > highestUnlockedMapStage) return;
+      if (!destination || !unlockedMapStages.has(destination.stage)) return;
       chapter = destination.chapter;
       wave = destination.wave;
-      sceneTheme = chapter === 2 ? "storm" : "meadow";
+      sceneTheme = chapter === 2 ? "storm" : chapter === 3 ? "jungle" : "meadow";
       mainMenu.hidden = true;
       gameHud.hidden = false;
       playHelp.hidden = false;
@@ -1293,10 +1390,13 @@
       chapter = 1;
       spearUnlocked = false;
       weaponLuckUpgrades = 0;
+      healthUpgradeCount = 0;
+      monkeyHornUnlocked = false;
       weapon = weapons[0];
       unlockedWeaponNames = new Set(["Whip"]);
       wave = 1;
       highestUnlockedMapStage = 1;
+      unlockedMapStages = new Set([1]);
       selectedMapStage = 1;
       coins = 0;
       healthDrop = null;
@@ -1308,6 +1408,7 @@
       player.hitCooldown = 0;
       player.attackCooldown = 0;
       enemies = [];
+      alliedMonkeys = [];
       projectiles = [];
       bossDeathActive = false;
       gameEnded = false;
@@ -1316,6 +1417,7 @@
       gameHud.hidden = true;
       playHelp.hidden = true;
       gameEndPopup.hidden = true;
+      gorillaIntroPopup.hidden = true;
       airshipPopup.hidden = true;
       stormPopup.hidden = true;
       bossDeathPopup.hidden = true;
@@ -1328,20 +1430,21 @@
     }
 
     function startAirshipCutscene() {
-      chapter = 2;
+      chapter = 1;
+      wave = 3;
       sceneTheme = "meadow";
       cutsceneTimer = 0;
       setMusicScene("dialogue");
       mainMenu.hidden = true;
       gameHud.hidden = true;
       playHelp.hidden = true;
-      airshipMessage.textContent = "An airship has arrived. It can take you to Storm City. Do you want to stay or go?";
+      airshipMessage.textContent = "The airship can take you to Storm City, or you can stay and explore Gorilla Jungle beside Bunny Meadow.";
       airshipPopup.hidden = false;
     }
 
     function loadSavedGame() {
       if (!savedGame) return;
-      chapter = savedGame.chapter === 2 ? 2 : 1;
+      chapter = savedGame.chapter === 3 ? 3 : savedGame.chapter === 2 ? 2 : 1;
       coins = Number.isFinite(savedGame.coins) ? savedGame.coins : coins;
       player.maxHealth = Number.isFinite(savedGame.maxHealth) ? savedGame.maxHealth : player.maxHealth;
       player.health = Number.isFinite(savedGame.health)
@@ -1364,11 +1467,22 @@
       if (weapons.some((item) => item.name === savedWeaponName)) savedUnlocks.push(savedWeaponName);
       unlockedWeaponNames = new Set(["Whip", ...savedUnlocks]);
       if (spearUnlocked) unlockedWeaponNames.add("Lightning Queen's Spear");
-      const legacyHighestMapStage = Math.max(1, Math.min(6,
-        (chapter === 2 ? 3 : 0) + ([1, 2, 3].includes(savedGame.wave) ? savedGame.wave : 1)));
+      monkeyHornUnlocked = savedGame.monkeyHornUnlocked === true ||
+        unlockedWeaponNames.has("Monkey Horn");
+      if (monkeyHornUnlocked) unlockedWeaponNames.add("Monkey Horn");
+      const savedWave = [1, 2, 3].includes(savedGame.wave) ? savedGame.wave : 1;
+      const legacyHighestMapStage = Math.max(1, Math.min(9, (chapter - 1) * 3 + savedWave));
       highestUnlockedMapStage = Number.isInteger(savedGame.highestMapStage)
-        ? Math.max(legacyHighestMapStage, Math.max(1, Math.min(6, savedGame.highestMapStage)))
+        ? Math.max(legacyHighestMapStage, Math.max(1, Math.min(9, savedGame.highestMapStage)))
         : legacyHighestMapStage;
+      unlockedMapStages = Array.isArray(savedGame.unlockedMapStages)
+        ? new Set(savedGame.unlockedMapStages.filter((stage) => Number.isInteger(stage) && stage >= 1 && stage <= 9))
+        : new Set(Array.from({ length: highestUnlockedMapStage }, (_, index) => index + 1));
+      unlockedMapStages.add(1);
+      if (savedGame.checkpoint === "airship") unlockMapStage(4);
+      healthUpgradeCount = Number.isInteger(savedGame.healthUpgradeCount)
+        ? Math.max(0, Math.min(1000000, savedGame.healthUpgradeCount))
+        : Math.max(0, Math.floor((player.maxHealth - 100) / 10));
       player.ultimateCharge = 0;
       showLoadingMenu();
     }
@@ -1382,7 +1496,7 @@
         startAirshipCutscene();
         return;
       }
-      sceneTheme = chapter === 2 ? "storm" : "meadow";
+      sceneTheme = chapter === 2 ? "storm" : chapter === 3 ? "jungle" : "meadow";
       mainMenu.hidden = true;
       gameHud.hidden = false;
       playHelp.hidden = false;
@@ -1447,9 +1561,14 @@
         weaponLuckUpgrades = Number.isInteger(savedGame?.weaponLuckUpgrades)
           ? Math.max(0, Math.min(5, savedGame.weaponLuckUpgrades))
           : 0;
+        healthUpgradeCount = Number.isInteger(savedGame?.healthUpgradeCount)
+          ? Math.max(0, Math.min(1000000, savedGame.healthUpgradeCount))
+          : Number.isFinite(savedGame?.maxHealth) ? Math.max(0, Math.floor((savedGame.maxHealth - 100) / 10)) : 0;
         spearUnlocked = savedGame?.spearUnlocked === true;
+        monkeyHornUnlocked = savedGame?.monkeyHornUnlocked === true ||
+          (Array.isArray(savedGame?.unlockedWeaponNames) && savedGame.unlockedWeaponNames.includes("Monkey Horn"));
         weapon = weapons.find((item) => item.name === savedGame?.weaponName) || weapons[0];
-        chapter = savedGame?.chapter === 2 ? 2 : 1;
+        chapter = savedGame?.chapter === 3 ? 3 : savedGame?.chapter === 2 ? 2 : 1;
         wave = [1, 2, 3].includes(savedGame?.wave) ? savedGame.wave : 1;
         player.ultimateCharge = 0;
         if (savedGame) loadSavedGame();
@@ -1465,6 +1584,8 @@
 
     function startStormTravel() {
       airshipPopup.hidden = true;
+      chapter = 2;
+      wave = 1;
       sceneTheme = "storm";
       stormTravelTimer = 2.2;
       stormPopup.hidden = false;
@@ -1479,34 +1600,40 @@
         player.health <= player.maxHealth * 0.6 ? "#e6ae36" : "#4bc66b";
       healthTrack.setAttribute("aria-valuemax", String(player.maxHealth));
       healthTrack.setAttribute("aria-valuenow", String(player.health));
-      waveText.textContent = `${chapter === 2 ? "Level 2 Storm City" : "Story"} — Wave: ${wave} / 3`;
-      bunnyCount.textContent = `${chapter === 2 ? "Enemies" : "Evil bunnies"}: ${enemies.length}`;
+      const chapterName = chapter === 2 ? "Storm City" : chapter === 3 ? "Gorilla Jungle" : "Story";
+      waveText.textContent = `${chapterName} — Wave: ${wave} / 3`;
+      bunnyCount.textContent = `${chapter === 3 ? "Jungle enemies" : chapter === 2 ? "Enemies" : "Evil bunnies"}: ${enemies.length}`;
       coinsText.textContent = `Coins: ${coins}`;
       weaponText.textContent = `Weapon: ${weapon.name} (${weapon.rarity})`;
       ultimateText.textContent = weapon.rarity === "Common"
         ? "Ultimate: unavailable for Common weapons"
         : `Ultimate: ${Math.floor(player.ultimateCharge)} / 100 damage (R)`;
       shopCoins.textContent = `Coins: ${coins}`;
+      const healthUpgradeCost = 5 + healthUpgradeCount * 10;
+      buyHealthButton.textContent = `Upgrade health (+10) — ${healthUpgradeCost} coins`;
       shopHealth.textContent = `Health: ${player.maxHealth} maximum (+10 per upgrade)`;
-      const betterChance = Math.min(80, (spearUnlocked ? 40 : 30) + weaponLuckUpgrades * 10);
+      const baseBetterChance = 30 + Number(spearUnlocked) * 10 + Number(monkeyHornUnlocked) * 10;
+      const betterChance = Math.min(80, baseBetterChance + weaponLuckUpgrades * 10);
       shopLuck.textContent = `Better weapon chance: ${betterChance}% (upgrade limit: 80%)`;
       const dropSeconds = healthDrop ? 0 : Math.max(0, Math.ceil(healthDropTimer));
       healthDropText.textContent = saveWarning || (healthDrop
         ? "Health drop: grab the heart!"
         : `Health drop: ${dropSeconds}s`);
-      const maxLuckUpgrades = Math.floor((80 - (spearUnlocked ? 40 : 30)) / 10);
+      const maxLuckUpgrades = Math.floor((80 - baseBetterChance) / 10);
       buyLuckButton.disabled = weaponLuckUpgrades >= maxLuckUpgrades;
       buyLuckButton.textContent = weaponLuckUpgrades >= maxLuckUpgrades
         ? "Better weapon chance (MAX)"
-        : "Better weapon chance (+10%) — 20 coins";
+        : `Better weapon chance (+10%) — ${20 + weaponLuckUpgrades * 10} coins`;
     }
 
-    function finishGame(message, ending = "win") {
+    function finishGame(message, ending = "win", dialogue = "") {
       if (gameEnded) return;
       gameEnded = true;
       isPlaying = false;
       setMusicScene(ending);
       gameEndMessage.textContent = message;
+      gameEndDialogue.textContent = dialogue;
+      gameEndDialogue.hidden = !dialogue;
       restartButton.textContent = "Keep Playing";
       gameEndPopup.hidden = false;
       heldKeys.clear();
@@ -1521,7 +1648,7 @@
         enemy.health = 0;
         enemy.dying = true;
         enemy.deathTimer = 0;
-        highestUnlockedMapStage = Math.max(highestUnlockedMapStage, 4);
+        unlockMapStage(4);
         bossDeathActive = true;
         isPlaying = false;
         cutsceneTimer = 0;
@@ -1556,10 +1683,27 @@
       if (!isPlaying) return;
       isPlaying = false;
       heldKeys.clear();
-      highestUnlockedMapStage = Math.max(highestUnlockedMapStage, Math.min(6, (chapter === 2 ? 3 : 0) + wave + 1));
+      if (wave < 3) unlockMapStage((chapter - 1) * 3 + wave + 1);
       coins += 5;
+      if (chapter === 3 && wave === 3) {
+        unlockMapStage(9);
+        const foundMonkeyHorn = Math.random() < 0.1;
+        if (foundMonkeyHorn) {
+          monkeyHornUnlocked = true;
+          unlockedWeaponNames.add("Monkey Horn");
+        } else {
+          coins += 95;
+        }
+        saveProgress("gorilla", 1);
+        updateHud();
+        finishGame(foundMonkeyHorn
+          ? "The Gorilla Emperor fell! You found the Epic Monkey Horn. It is now on the weapon wheel!"
+          : "The Gorilla Emperor fell! You earned 100 coins.",
+        "win", "\"Bunny didnt tell me you were strong!?\"");
+        return;
+      }
       if (chapter === 2 && wave === 3) {
-        highestUnlockedMapStage = Math.max(highestUnlockedMapStage, 6);
+        unlockMapStage(6);
         const foundSpear = Math.random() < 0.1;
         if (foundSpear) {
           spearUnlocked = true;
@@ -1573,9 +1717,11 @@
           : "The Lightning Queen fell! You found 50 coins.");
         return;
       }
-      saveProgress(chapter === 2 ? "lightning" : "story", Math.min(3, wave + 1));
+      const checkpoint = chapter === 2 ? "lightning" : chapter === 3 ? "gorilla" : "story";
+      saveProgress(checkpoint, Math.min(3, wave + 1));
       waveMessage.textContent = `Wave ${wave} cleared!`;
-      waveReward.textContent = `You earned 5 coins. ${chapter === 2 ? "Lightning Arena wave cleared!" : ""}`;
+      waveReward.textContent = `You earned 5 coins. ${chapter === 2 ? "Storm City wave cleared!" :
+        chapter === 3 ? "Gorilla Jungle wave cleared!" : ""}`;
       rolledWeaponText.textContent = "";
       rolledWeaponText.className = "";
       wheelWrap.hidden = true;
@@ -1587,8 +1733,7 @@
       isRolling = false;
       rollResultReady = false;
       wavePopup.hidden = false;
-      if (chapter === 2) saveProgress("lightning", wave);
-      else saveProgress("story", wave);
+      saveProgress(chapter === 2 ? "lightning" : chapter === 3 ? "gorilla" : "story", wave);
       updateHud();
     }
 
@@ -1597,15 +1742,15 @@
       bossDeathPopup.hidden = true;
       enemies = [];
       projectiles = [];
-      chapter = 2;
-      wave = 1;
-      highestUnlockedMapStage = Math.max(highestUnlockedMapStage, 4);
+      chapter = 1;
+      wave = 3;
+      unlockMapStage(4);
       sceneTheme = "meadow";
       gameHud.hidden = true;
       playHelp.hidden = true;
       saveProgress("airship", 1);
       updateHud();
-      showLoadingMenu();
+      startAirshipCutscene();
     }
 
     function updateCutscenes(delta) {
@@ -1685,15 +1830,30 @@
         scythe: "REAPER'S SPIN",
         axe: "THUNDERING THROW",
         heroSword: "HERO'S SKY-CLEAVING SLASH",
-        lightningSpear: "TEMPEST OF A THOUSAND BOLTS"
+        lightningSpear: "TEMPEST OF A THOUSAND BOLTS",
+        monkeyHorn: "MONKEY STAMPEDE"
       };
       player.ultimateName = ultimateNames[weapon.type] || "ULTIMATE STRIKE";
       player.ultimateColor = weapon.type === "lightningSpear" ? "#76edff" :
         weapon.type === "scythe" ? "#d7e0e8" :
-          weapon.type === "axe" ? "#ffd070" : "#d59bff";
+          weapon.type === "axe" ? "#ffd070" :
+            weapon.type === "monkeyHorn" ? "#f2c65d" : "#d59bff";
       if (weapon.type === "lightningSpear") {
         ultimateStormTime = 3.2;
         ultimateStormTimer = 0;
+        updateHud();
+        return;
+      }
+      if (weapon.type === "monkeyHorn") {
+        for (let monkey = 0; monkey < 3; monkey++) {
+          alliedMonkeys.push({
+            x: player.x + (monkey - 1) * 26,
+            y: player.y + 16,
+            life: 8,
+            attackTimer: 0.3 + monkey * 0.2,
+            animationTime: 0
+          });
+        }
         updateHud();
         return;
       }
@@ -1787,6 +1947,52 @@
             ctx.lineTo(x - 9, dropY + 18);
             ctx.stroke();
           }
+        }
+      } else if (sceneTheme === "jungle") {
+        const jungleSky = ctx.createLinearGradient(0, 0, 0, 420);
+        jungleSky.addColorStop(0, "#87b778");
+        jungleSky.addColorStop(1, "#d4df8a");
+        ctx.fillStyle = jungleSky;
+        ctx.fillRect(0, 0, canvas.width, 430);
+        for (const tree of [
+          { x: 25, y: 363, size: 1.3 }, { x: 180, y: 377, size: 0.9 },
+          { x: 430, y: 365, size: 1.15 }, { x: 650, y: 376, size: 0.95 },
+          { x: 920, y: 361, size: 1.35 }
+        ]) {
+          ctx.save();
+          ctx.translate(tree.x, tree.y);
+          ctx.scale(tree.size, tree.size);
+          ctx.fillStyle = "#604833";
+          ctx.fillRect(-8, -90, 16, 125);
+          ctx.fillStyle = "#315d3b";
+          ctx.beginPath();
+          ctx.ellipse(0, -104, 49, 27, 0, 0, Math.PI * 2);
+          ctx.ellipse(-31, -88, 34, 20, -0.3, 0, Math.PI * 2);
+          ctx.ellipse(31, -88, 34, 20, 0.3, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        }
+        const jungleFloor = ctx.createLinearGradient(0, 350, 0, 450);
+        jungleFloor.addColorStop(0, "#7cae4e");
+        jungleFloor.addColorStop(1, "#3d773d");
+        ctx.fillStyle = jungleFloor;
+        ctx.beginPath();
+        ctx.moveTo(0, 379);
+        ctx.quadraticCurveTo(180, 335, 360, 389);
+        ctx.quadraticCurveTo(620, 340, 960, 376);
+        ctx.lineTo(960, 450);
+        ctx.lineTo(0, 450);
+        ctx.closePath();
+        ctx.fill();
+        for (let leaf = 0; leaf < 14; leaf++) {
+          const x = (leaf * 83 + sceneTime * (leaf % 2 ? 8 : -6) + 960) % 960;
+          const y = 410 + leaf % 3 * 11;
+          ctx.strokeStyle = leaf % 2 ? "#b6d665" : "#28643d";
+          ctx.lineWidth = 5;
+          ctx.beginPath();
+          ctx.moveTo(x, y + 20);
+          ctx.quadraticCurveTo(x + (leaf % 2 ? 20 : -20), y, x + (leaf % 2 ? 36 : -36), y + 3);
+          ctx.stroke();
         }
       } else {
         const mountains = ctx.createLinearGradient(0, 245, 0, 405);
@@ -2130,6 +2336,25 @@
         ctx.lineWidth = 1.5;
         ctx.beginPath(); ctx.moveTo(38, -19); ctx.lineTo(31, -14); ctx.stroke();
         ctx.restore();
+      } else if (weapon.type === "monkeyHorn") {
+        ctx.save();
+        ctx.rotate(-0.45);
+        ctx.strokeStyle = "#704628";
+        ctx.lineWidth = 7;
+        ctx.beginPath();
+        ctx.moveTo(-8, 10);
+        ctx.lineTo(20, -14);
+        ctx.stroke();
+        ctx.fillStyle = "#f2c65d";
+        ctx.beginPath();
+        ctx.moveTo(15, -12);
+        ctx.lineTo(22, -29);
+        ctx.lineTo(29, -17);
+        ctx.lineTo(39, -28);
+        ctx.lineTo(34, -9);
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
       }
       ctx.restore();
     }
@@ -2336,6 +2561,24 @@
         ctx.beginPath();
         ctx.moveTo(110, 0); ctx.lineTo(36, -4); ctx.lineTo(36, 4); ctx.closePath();
         ctx.fill();
+      } else if (weapon.type === "monkeyHorn") {
+        const pulse = Math.sin(progress * Math.PI);
+        ctx.strokeStyle = color;
+        ctx.lineWidth = isUltimate ? 10 : 5;
+        ctx.globalAlpha *= isUltimate ? 0.75 : 0.5;
+        ctx.beginPath();
+        ctx.arc(42, -4, 20 + pulse * (isUltimate ? 180 : 28), -0.75, 0.75);
+        ctx.stroke();
+        if (isUltimate) {
+          for (let monkey = 0; monkey < 3; monkey++) {
+            const x = 70 + progress * 210 + monkey * 36;
+            const y = Math.sin(progress * Math.PI * 2 + monkey) * 34;
+            ctx.fillStyle = "#b97843";
+            ctx.beginPath();
+            ctx.arc(x, y, 11, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        }
       }
       ctx.restore();
     }
@@ -2692,15 +2935,18 @@
     function drawEnemy(enemy) {
       const isBunnyBoss = enemy.type === "boss";
       const isLightningBoss = enemy.type === "lightningBoss";
-      const isBoss = isBunnyBoss || isLightningBoss;
+      const isGorillaBoss = enemy.type === "gorillaEmperor";
+      const isBoss = isBunnyBoss || isLightningBoss || isGorillaBoss;
       const isLightningEnemy = ["fighter", "guard", "lightningBoss"].includes(enemy.type);
-      const scale = isBoss ? 2 : enemy.type === "guard" ? 1.35 : enemy.type === "big" ? 1.45 : 1;
+      const isGorillaEnemy = ["monkey", "gorilla", "armoredGorilla", "gorillaEmperor"].includes(enemy.type);
+      const scale = isBoss ? 2 : enemy.type === "guard" || enemy.type === "armoredGorilla" ? 1.35 :
+        enemy.type === "big" ? 1.45 : enemy.type === "gorilla" ? 1.2 : 1;
       const animation = enemy.animationTime || 0;
       const facing = enemy.facing || 1;
       const hop = enemy.dying ? 0 : Math.abs(Math.sin(animation * 0.55)) * (isBoss ? 3 : 2);
       const sink = enemy.dying ? Math.max(0, Math.min(1, (enemy.deathTimer - 1) / 2.8)) : 0;
       if (isBoss && !enemy.dying) {
-        const auraColor = isLightningBoss ? "#77eaff" : "#e5a5ff";
+        const auraColor = isLightningBoss ? "#77eaff" : isGorillaBoss ? "#d5b44e" : "#e5a5ff";
         const auraRadius = 70 + Math.sin(animation * 0.7) * 7;
         const aura = ctx.createRadialGradient(enemy.x, enemy.y - 7, 5, enemy.x, enemy.y - 7, auraRadius);
         aura.addColorStop(0, "transparent");
@@ -2799,6 +3045,69 @@
           ctx.lineTo(29, -23); ctx.lineTo(22, -16);
           ctx.stroke();
         }
+      } else if (isGorillaEnemy) {
+        const isArmored = enemy.type === "armoredGorilla" || isGorillaBoss;
+        const fur = ctx.createLinearGradient(-18, -38, 18, 12);
+        fur.addColorStop(0, enemy.type === "monkey" ? "#b97843" : "#73462f");
+        fur.addColorStop(1, enemy.type === "monkey" ? "#70412e" : "#392c28");
+        ctx.fillStyle = fur;
+        ctx.shadowColor = isGorillaBoss ? "#e4c15c" : "#5c3a2b";
+        ctx.shadowBlur = isGorillaBoss ? 20 : 6;
+        ctx.beginPath();
+        ctx.ellipse(0, 0, 21, 20, 0, 0, Math.PI * 2);
+        ctx.ellipse(12, -19, 16, 15, 0, 0, Math.PI * 2);
+        ctx.ellipse(-19, -1, 8, 15, -0.3, 0, Math.PI * 2);
+        ctx.ellipse(20, -1, 8, 15, 0.3, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = "#c99870";
+        ctx.beginPath();
+        ctx.ellipse(19, -14, 8, 6, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = "#211b19";
+        ctx.beginPath();
+        ctx.arc(17, -23, 2.2, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = "#33231d";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(20, -9);
+        ctx.lineTo(28, -10);
+        ctx.stroke();
+        if (isArmored) {
+          const armor = ctx.createLinearGradient(-12, -8, 12, 16);
+          armor.addColorStop(0, isGorillaBoss ? "#f5d774" : "#b9c3c0");
+          armor.addColorStop(1, isGorillaBoss ? "#a77a31" : "#58666a");
+          ctx.fillStyle = armor;
+          ctx.beginPath();
+          ctx.roundRect(-13, -7, 27, 21, 5);
+          ctx.fill();
+          ctx.strokeStyle = isGorillaBoss ? "#fff0a0" : "#e3e5d7";
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.moveTo(0, -4);
+          ctx.lineTo(0, 12);
+          ctx.stroke();
+        }
+        if (isGorillaBoss) {
+          ctx.fillStyle = "#f4d45d";
+          ctx.beginPath();
+          ctx.moveTo(2, -30);
+          ctx.lineTo(5, -43);
+          ctx.lineTo(12, -34);
+          ctx.lineTo(19, -45);
+          ctx.lineTo(23, -29);
+          ctx.closePath();
+          ctx.fill();
+          ctx.strokeStyle = "#f2d879";
+          ctx.lineWidth = 4;
+          ctx.beginPath();
+          ctx.moveTo(-2, -25);
+          ctx.lineTo(-8, -38);
+          ctx.moveTo(-8, -38);
+          ctx.lineTo(-13, -32);
+          ctx.stroke();
+        }
       } else {
         const fur = ctx.createLinearGradient(-18, -35, 18, 12);
         fur.addColorStop(0, isBunnyBoss ? "#f0d7f4" : "#ffffff");
@@ -2846,7 +3155,7 @@
         ctx.globalAlpha = Math.min(1, enemy.hitFlash / 0.14);
         ctx.strokeStyle = "#fff";
         ctx.lineWidth = 2;
-        ctx.shadowColor = isLightningEnemy ? "#a3f5ff" : "#ffe5f6";
+        ctx.shadowColor = isLightningEnemy ? "#a3f5ff" : isGorillaEnemy ? "#edc66d" : "#ffe5f6";
         ctx.shadowBlur = 18;
         ctx.beginPath();
         ctx.ellipse(4, -10, 20, 29, 0, 0, Math.PI * 2);
@@ -2857,8 +3166,10 @@
       ctx.fillRect(-10 + Math.sin(animation) * 2, 8, 7, 5);
       ctx.fillRect(7 - Math.sin(animation) * 2, 8, 7, 5);
       ctx.restore();
-      const barWidth = isBoss ? 100 : enemy.type === "guard" ? 52 : enemy.type === "big" ? 48 : 40;
-      const barY = enemy.y - (isBoss ? 78 : enemy.type === "guard" ? 48 : enemy.type === "big" ? 55 : 42);
+      const barWidth = isBoss ? 100 : enemy.type === "guard" || enemy.type === "armoredGorilla" ? 52 :
+        enemy.type === "big" || enemy.type === "gorilla" ? 48 : 40;
+      const barY = enemy.y - (isBoss ? 78 : enemy.type === "guard" || enemy.type === "armoredGorilla" ? 48 :
+        enemy.type === "big" ? 55 : 42);
       if (!enemy.dying) {
         const barHeight = isBoss ? 7 : 5;
         ctx.fillStyle = "#11182a";
@@ -2873,7 +3184,8 @@
         ctx.beginPath();
         ctx.roundRect(enemy.x - barWidth / 2, barY, barWidth * health, barHeight, barHeight);
         ctx.fill();
-        if (isBoss && Number.isFinite(enemy.attackTimer) && enemy.attackTimer < 0.45) {
+        const warningTimer = Number.isFinite(enemy.attackTimer) ? enemy.attackTimer : enemy.hornTimer;
+        if (isBoss && Number.isFinite(warningTimer) && warningTimer < 0.45) {
           const warningPulse = 0.65 + Math.sin(sceneTime * 24) * 0.35;
           ctx.save();
           ctx.globalAlpha = warningPulse;
@@ -2888,13 +3200,13 @@
         }
       }
       if (isBoss) {
-        const label = isLightningBoss ? "Lightning Queen" : "Bunny Boss";
+        const label = isLightningBoss ? "Lightning Queen" : isGorillaBoss ? "Gorilla Emperor" : "Bunny Boss";
         ctx.textAlign = "center";
         ctx.font = "bold 16px system-ui";
         ctx.lineWidth = 3;
         ctx.strokeStyle = "white";
         ctx.strokeText(label, enemy.x, barY - 8);
-        ctx.fillStyle = isLightningBoss ? "#28285c" : "#462e52";
+        ctx.fillStyle = isLightningBoss ? "#28285c" : isGorillaBoss ? "#614614" : "#462e52";
         ctx.fillText(label, enemy.x, barY - 8);
       } else if (isLightningEnemy) {
         const label = enemy.type === "guard" ? "Lightning Guard" : "Lightning Fighter";
@@ -2905,7 +3217,41 @@
         ctx.strokeText(label, enemy.x, barY - 5);
         ctx.fillStyle = "#253654";
         ctx.fillText(label, enemy.x, barY - 5);
+      } else if (isGorillaEnemy) {
+        const label = enemy.type === "armoredGorilla" ? "Armored Gorilla" :
+          enemy.type === "gorilla" ? "Gorilla" : "Monkey";
+        ctx.textAlign = "center";
+        ctx.font = "bold 12px system-ui";
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = "white";
+        ctx.strokeText(label, enemy.x, barY - 5);
+        ctx.fillStyle = "#4a3424";
+        ctx.fillText(label, enemy.x, barY - 5);
       }
+    }
+
+    function drawAlliedMonkey(monkey) {
+      ctx.save();
+      ctx.translate(monkey.x, monkey.y - Math.abs(Math.sin(monkey.animationTime) * 3));
+      ctx.fillStyle = "#70412e";
+      ctx.beginPath();
+      ctx.ellipse(0, 0, 14, 11, 0, 0, Math.PI * 2);
+      ctx.arc(8, -9, 9, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "#d5a176";
+      ctx.beginPath();
+      ctx.ellipse(12, -6, 5, 4, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "#211b19";
+      ctx.beginPath();
+      ctx.arc(10, -11, 1.5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = "#70412e";
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.arc(-12, -9, 12, 0.1, 1.4);
+      ctx.stroke();
+      ctx.restore();
     }
 
     function draw(delta) {
@@ -2975,6 +3321,7 @@
       if (!airshipPopup.hidden) drawAirship();
       if (isPlaying || gameEnded || wavePopup.hidden === false || bossDeathActive) {
         for (const enemy of enemies) drawEnemy(enemy);
+        for (const monkey of alliedMonkeys) drawAlliedMonkey(monkey);
         drawPlayer();
       }
       for (const projectile of projectiles) {
@@ -3053,20 +3400,25 @@
       cameraShake = Math.max(cameraShake, 0.18);
       updateHud();
       if (!player.health) {
-        finishGame(chapter === 2 ? "The lightning fighters defeated you!" : "The evil bunnies got you!", "lose");
+        finishGame(chapter === 2 ? "The lightning fighters defeated you!" :
+          chapter === 3 ? "The Gorilla Emperor's army defeated you!" : "The evil bunnies got you!",
+        "lose", chapter === 3 && wave === 3 ? "\"Ha i knew you werent strong\"" : "");
       }
     }
 
     function updateEnemies(delta) {
       for (const enemy of enemies) {
-        enemy.animationTime = (enemy.animationTime || 0) + delta * (enemy.type === "boss" || enemy.type === "lightningBoss" ? 7 : 10);
+        enemy.animationTime = (enemy.animationTime || 0) +
+          delta * (["boss", "lightningBoss", "gorillaEmperor"].includes(enemy.type) ? 7 : 10);
         enemy.hitFlash = Math.max(0, (enemy.hitFlash || 0) - delta);
         const dx = player.x - enemy.x;
         const dy = player.y - enemy.y;
         const distance = Math.hypot(dx, dy) || 1;
         enemy.facing = dx >= 0 ? 1 : -1;
         const isRanged = ["boss", "fighter", "lightningBoss"].includes(enemy.type);
-        const speed = isRanged ? 28 : enemy.type === "big" ? 38 : 48;
+        const speed = isRanged ? 28 : enemy.type === "big" ? 38 :
+          enemy.type === "armoredGorilla" || enemy.type === "gorillaEmperor" ? 30 :
+            enemy.type === "gorilla" ? 36 : 48;
         if (distance > 28) {
           enemy.x += dx / distance * speed * delta;
           enemy.y = Math.max(391, enemy.y + dy / distance * speed * delta);
@@ -3088,9 +3440,59 @@
             });
             enemy.attackTimer = enemy.type === "lightningBoss" ? 2.2 : 2.5;
           }
-        } else if (distance < 30) {
-          takeHit(enemy.type === "guard" ? 30 : enemy.type === "big" ? 10 : 5);
+        } else if (enemy.type === "gorillaEmperor") {
+          enemy.hornTimer -= delta;
+          if (enemy.hornTimer <= 0) {
+            const monkeyCount = enemies.filter((item) => item.type === "monkey").length;
+            for (let monkey = 0; monkey < Math.min(2, 6 - monkeyCount); monkey++) {
+              enemies.push({
+                x: enemy.x + (monkey ? 30 : -30),
+                y: enemy.y + 12,
+                health: 25,
+                maxHealth: 25,
+                type: "monkey",
+                attackDamage: 30
+              });
+            }
+            enemy.hornTimer = 9;
+          }
+          if (distance < 30) takeHit(enemy.attackDamage);
           if (gameEnded) return;
+        } else if (distance < 30) {
+          takeHit(enemy.attackDamage ?? (enemy.type === "guard" ? 30 : enemy.type === "big" ? 10 : 5));
+          if (gameEnded) return;
+        }
+      }
+    }
+
+    function updateAlliedMonkeys(delta) {
+      alliedMonkeys = alliedMonkeys.filter((monkey) => monkey.life > 0 && isPlaying);
+      for (const monkey of alliedMonkeys) {
+        monkey.life -= delta;
+        monkey.animationTime += delta * 10;
+        const target = enemies
+          .filter((enemy) => enemy.health > 0 && !enemy.dying)
+          .sort((first, second) =>
+            Math.hypot(first.x - monkey.x, first.y - monkey.y) -
+            Math.hypot(second.x - monkey.x, second.y - monkey.y))[0];
+        if (!target) continue;
+        const dx = target.x - monkey.x;
+        const dy = target.y - monkey.y;
+        const distance = Math.hypot(dx, dy) || 1;
+        monkey.attackTimer -= delta;
+        if (distance > 35) {
+          monkey.x += dx / distance * 105 * delta;
+          monkey.y = Math.max(391, monkey.y + dy / distance * 105 * delta);
+        } else if (monkey.attackTimer <= 0) {
+          defeatEnemy(target, 15);
+          impactEffects.push({ x: target.x, y: target.y - 12, life: 0.36, color: "#b9ef70" });
+          enemies = enemies.filter((enemy) => enemy.health > 0 || enemy.dying);
+          monkey.attackTimer = 0.8;
+          if (!enemies.length) {
+            completeWave();
+            return;
+          }
+          updateHud();
         }
       }
     }
@@ -3105,7 +3507,7 @@
           const target = enemies.find((enemy) => enemy.health > 0 && !enemy.dying &&
             !projectile.hitEnemies.has(enemy) &&
             Math.hypot(enemy.x - projectile.x, enemy.y - projectile.y) <
-              (["boss", "lightningBoss"].includes(enemy.type) ? 52 : enemy.type === "guard" ? 36 : 30));
+              (["boss", "lightningBoss", "gorillaEmperor"].includes(enemy.type) ? 52 : enemy.type === "guard" ? 36 : 30));
           if (target) {
             projectile.hitEnemies.add(target);
             defeatEnemy(target, projectile.damage);
@@ -3117,7 +3519,7 @@
           }
         } else if (projectile.type === "arrow") {
           const target = enemies.find((enemy) => Math.hypot(enemy.x - projectile.x, enemy.y - projectile.y) <
-            (["boss", "lightningBoss"].includes(enemy.type) ? 48 : 26));
+            (["boss", "lightningBoss", "gorillaEmperor"].includes(enemy.type) ? 48 : 26));
           if (target) {
             defeatEnemy(target, projectile.damage);
             enemies = enemies.filter((enemy) => enemy.health > 0 || enemy.dying);
@@ -3197,6 +3599,7 @@
         player.y = Math.max(391, Math.min(canvas.height - 30, player.y + dy / length * player.speed * delta));
         updateHealthDrop(delta);
         updateEnemies(delta);
+        updateAlliedMonkeys(delta);
         updateProjectiles(delta);
         updateUltimateStorm(delta);
       }
@@ -3206,7 +3609,9 @@
 
     function startWave(number, refillHealth = false) {
       wave = number;
+      sceneTheme = chapter === 2 ? "storm" : chapter === 3 ? "jungle" : "meadow";
       enemies = createWaveEnemies(wave);
+      alliedMonkeys = [];
       projectiles = [];
       lightningStrikes = [];
       ultimateStormTime = 0;
@@ -3217,9 +3622,10 @@
       isPlaying = true;
       gameEnded = false;
       setMusicScene(wave === 3 ? "boss" : "wave");
-      if (chapter === 2) saveProgress("lightning", wave);
-      else saveProgress("story", wave);
+      saveProgress(chapter === 2 ? "lightning" : chapter === 3 ? "gorilla" : "story", wave);
       updateHud();
+      gorillaIntroPopup.hidden = !(chapter === 3 && wave === 3);
+      if (!gorillaIntroPopup.hidden) isPlaying = false;
     }
 
     function drawRollWheel(rotation) {
@@ -3276,7 +3682,8 @@
         "Base Scythe": "Sweeps a crescent blade through nearby enemies; its ultimate spins in a circle.",
         "Double-Sided Axe": "Chops forward with both axe blades; its ultimate throws the axe.",
         "Hero's Sword": "A sword slash hits close enemies and launches a flying blue air slash through enemies.",
-        "Lightning Queen's Spear": "A spear hit deals 20 damage plus a 20-damage lightning bolt. Its ultimate rains 5-damage lightning bolts."
+        "Lightning Queen's Spear": "A spear hit deals 20 damage plus a 20-damage lightning bolt. Its ultimate rains 5-damage lightning bolts.",
+        "Monkey Horn": "Blow the horn to call monkey allies. Its ultimate summons three monkeys to fight beside you."
       };
       return descriptions[item.name];
     }
@@ -3355,7 +3762,9 @@
       if (wave === 3) {
         finishGame(chapter === 2
           ? "You defeated the Lightning Queen and cleared Storm City!"
-          : "You defeated the Bunny Boss and completed story mode!");
+          : chapter === 3
+            ? "You defeated the Gorilla Emperor and cleared Gorilla Jungle!"
+            : "You defeated the Bunny Boss and completed story mode!");
         return;
       }
       startWave(wave + 1);
@@ -3391,9 +3800,19 @@
     document.querySelector("#switchAccountButton").addEventListener("click", () => showAccountScreen());
     document.querySelector("#stayButton").addEventListener("click", () => {
       airshipPopup.hidden = true;
-      showLoadingMenu();
+      chapter = 3;
+      wave = 1;
+      unlockMapStage(7);
+      sceneTheme = "jungle";
+      gameHud.hidden = false;
+      playHelp.hidden = false;
+      startWave(1, true);
     });
     document.querySelector("#travelButton").addEventListener("click", startStormTravel);
+    gorillaIntroContinue.addEventListener("click", () => {
+      gorillaIntroPopup.hidden = true;
+      isPlaying = true;
+    });
     document.querySelector("#openShopButton").addEventListener("click", () => {
       mainMenu.hidden = true;
       shopReturnsToWave = false;
@@ -3416,27 +3835,31 @@
       showAccountScreen();
     });
     document.querySelector("#buyHealthButton").addEventListener("click", () => {
-      if (coins < 5) {
+      const cost = 5 + healthUpgradeCount * 10;
+      if (coins < cost) {
         shopHealth.textContent = "Not enough coins. Complete waves to earn more!";
         return;
       }
-      coins -= 5;
+      coins -= cost;
       player.maxHealth += 10;
       player.health += 10;
+      healthUpgradeCount += 1;
       if (hasSavedGame) saveProgress(savedGame.checkpoint, savedGame.wave);
       updateHud();
     });
     buyLuckButton.addEventListener("click", () => {
-      const maxLuckUpgrades = Math.floor((80 - (spearUnlocked ? 40 : 30)) / 10);
+      const baseBetterChance = 30 + Number(spearUnlocked) * 10 + Number(monkeyHornUnlocked) * 10;
+      const maxLuckUpgrades = Math.floor((80 - baseBetterChance) / 10);
       if (weaponLuckUpgrades >= maxLuckUpgrades) {
         shopLuck.textContent = "Your better weapon chance is already at its limit.";
         return;
       }
-      if (coins < 20) {
+      const cost = 20 + weaponLuckUpgrades * 10;
+      if (coins < cost) {
         shopLuck.textContent = "Not enough coins. Complete waves to earn more!";
         return;
       }
-      coins -= 20;
+      coins -= cost;
       weaponLuckUpgrades += 1;
       if (hasSavedGame) saveProgress(savedGame.checkpoint, savedGame.wave);
       updateHud();
