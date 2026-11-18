@@ -1,0 +1,2670 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Roll a Weapon</title>
+  <style>
+    :root {
+      font-family: system-ui, sans-serif;
+      color: #193247;
+      background: #dff3ff;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      min-height: 100vh;
+      margin: 0;
+      padding: 24px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(#dff3ff, #f8fcff);
+    }
+
+    main { width: min(960px, 100%); }
+
+    h1 { margin: 0 0 4px; font-size: clamp(1.7rem, 5vw, 2.4rem); }
+
+    .instructions { margin: 0 0 16px; color: #42637a; }
+
+    .game {
+      position: relative;
+      overflow: hidden;
+      border: 4px solid white;
+      border-radius: 18px;
+      background: #87ceeb;
+      box-shadow: 0 12px 35px #245a7833;
+    }
+
+    .game-hud {
+      position: absolute;
+      z-index: 1;
+      top: 12px;
+      left: 12px;
+      min-width: 190px;
+      padding: 9px 12px;
+      border-radius: 10px;
+      color: white;
+      background: #193247dd;
+      font-weight: 700;
+    }
+
+    .health-track {
+      height: 12px;
+      margin: 5px 0;
+      overflow: hidden;
+      border-radius: 999px;
+      background: #633d45;
+    }
+
+    .health-fill {
+      width: 100%;
+      height: 100%;
+      border-radius: inherit;
+      background: #4bc66b;
+      transition: width 150ms ease, background-color 150ms ease;
+    }
+
+    .game-popup {
+      position: absolute;
+      z-index: 2;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      padding: 16px;
+      background: #15364b88;
+    }
+
+    .game-popup[hidden] { display: none; }
+
+    .popup-card {
+      width: min(440px, 100%);
+      padding: 22px;
+      border: 2px solid white;
+      border-radius: 16px;
+      background: #fffef5;
+      box-shadow: 0 10px 28px #173a4f55;
+    }
+
+    .popup-card h2 { margin: 0 0 10px; }
+    .popup-card p { margin: 7px 0; color: #42637a; }
+    .popup-card button { margin-top: 12px; }
+    .popup-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+    .popup-actions button { margin-top: 12px; }
+    .secondary-button { background: #48677c; }
+    .secondary-button:hover { background: #304d61; }
+    .rarity-common { color: #70777d !important; }
+    .rarity-rare { color: #2672cf !important; }
+    .rarity-epic { color: #8744bd !important; }
+    .wheel-wrap {
+      position: relative;
+      width: min(300px, 100%);
+      margin: 14px auto;
+    }
+    .wheel-wrap[hidden] { display: none; }
+    .wheel-canvas {
+      width: 100%;
+      aspect-ratio: 1;
+      border: 3px solid white;
+      border-radius: 50%;
+      box-shadow: 0 3px 12px #173a4f55;
+    }
+    .wheel-pointer {
+      position: absolute;
+      z-index: 1;
+      top: -9px;
+      left: calc(50% - 13px);
+      width: 0;
+      height: 0;
+      border-top: 24px solid #d84242;
+      border-right: 13px solid transparent;
+      border-left: 13px solid transparent;
+      filter: drop-shadow(0 1px 2px #173a4f77);
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      height: auto;
+      aspect-ratio: 16 / 9;
+    }
+
+    .name-screen {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      padding: 16px;
+      background: #15364b55;
+    }
+
+    .name-screen[hidden] { display: none; }
+
+    .name-card {
+      width: min(380px, 100%);
+      padding: 24px;
+      border: 2px solid white;
+      border-radius: 16px;
+      background: #fffef5;
+      box-shadow: 0 10px 28px #173a4f55;
+    }
+
+    .name-card h2 { margin: 0 0 6px; }
+    .name-card p { margin: 0 0 16px; color: #526979; }
+    label { display: block; margin-bottom: 6px; font-weight: 700; }
+    .menu-screen {
+      position: absolute;
+      z-index: 3;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      padding: 16px;
+      background: #15364b77;
+    }
+    .menu-screen[hidden] { display: none; }
+    .account-screen {
+      position: absolute;
+      z-index: 4;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      padding: 16px;
+      overflow-y: auto;
+      background: #15364b88;
+    }
+    .account-screen[hidden] { display: none; }
+    .account-screen .name-card { max-height: 100%; overflow-y: auto; }
+    .menu-card {
+      width: min(390px, 100%);
+      padding: 26px;
+      border: 2px solid white;
+      border-radius: 16px;
+      background: #fffef5;
+      text-align: center;
+      box-shadow: 0 10px 28px #173a4f55;
+    }
+    .menu-card h2 { margin: 0 0 8px; }
+    .menu-card p { margin: 0 0 16px; color: #526979; }
+    .menu-card button { display: block; width: 100%; margin-top: 10px; }
+    .menu-card .secondary-button { background: #48677c; }
+    .shop-upgrade { display: block; width: 100%; margin-top: 16px; }
+    .inventory-card {
+      width: min(820px, 100%);
+      max-height: min(90vh, 700px);
+      overflow-y: auto;
+    }
+    .inventory-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(145px, 1fr));
+      gap: 12px;
+      margin: 16px 0;
+    }
+    .inventory-item {
+      min-width: 0;
+      padding: 10px;
+      border: 1px solid #c8d6dd;
+      border-radius: 12px;
+      background: #f3f8fa;
+      text-align: center;
+    }
+    .inventory-art {
+      width: 100%;
+      height: 88px;
+      margin-bottom: 5px;
+    }
+    .inventory-item h3 { margin: 3px 0; font-size: 15px; }
+    .inventory-item p { margin: 3px 0; font-size: 13px; }
+    .inventory-locked { color: #5c6269 !important; font-weight: 800; }
+    .inventory-unlocked { color: #267a4a !important; font-weight: 800; }
+
+    input, button {
+      min-height: 44px;
+      border-radius: 9px;
+      font: inherit;
+    }
+
+    input {
+      width: 100%;
+      margin-bottom: 12px;
+      border: 2px solid #aac4d1;
+      padding: 8px 10px;
+    }
+
+    button {
+      border: 0;
+      padding: 8px 16px;
+      color: white;
+      background: #247a4a;
+      font-weight: 750;
+      cursor: pointer;
+    }
+
+    button:hover { background: #185e37; }
+    button:focus-visible, input:focus-visible { outline: 3px solid #e8ab32; outline-offset: 2px; }
+
+    .mobile-controls {
+      display: none;
+      grid-template-columns: repeat(3, 54px);
+      justify-content: center;
+      gap: 6px;
+      margin-top: 12px;
+    }
+
+    .mobile-controls button { touch-action: none; }
+    .mobile-controls [data-attack] { grid-column: 1 / -1; }
+    @media (pointer: coarse) { .mobile-controls { display: grid; } }
+    @media (max-width: 520px) { body { padding: 12px; } }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Roll a Weapon</h1>
+    <p class="instructions">Make your character, defeat the evil bunnies, and stay in the grass.</p>
+    <section class="game" aria-label="2D game">
+      <canvas id="scene" width="960" height="540" aria-label="Blue sky, clouds, and a grassy field"></canvas>
+      <div class="game-hud" id="gameHud" hidden>
+        <span id="healthText">Health: 100 / 100</span>
+        <div class="health-track" role="progressbar" aria-label="Health" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100">
+          <div class="health-fill" id="healthFill"></div>
+        </div>
+        <span id="waveText">Wave: 1 / 3</span><br>
+        <span id="bunnyCount">Enemies: 3</span><br>
+        <span id="coinsText">Coins: 0</span><br>
+        <span id="weaponText">Weapon: Whip (Common)</span><br>
+        <span id="ultimateText">Ultimate: 0 / 100 damage (R)</span><br>
+        <span id="healthDropText">Health drop: 10s</span>
+      </div>
+      <div class="menu-screen" id="mainMenu" hidden>
+        <div class="menu-card">
+          <h2>Roll a Weapon</h2>
+          <p id="menuDescription">Choose your adventure.</p>
+          <button type="button" id="keepPlayingButton">Keep Playing</button>
+          <button type="button" class="secondary-button" id="openInventoryButton">Inventory</button>
+          <button type="button" class="secondary-button" id="switchAccountButton">Switch account</button>
+          <button type="button" class="secondary-button" id="openShopButton">Shop</button>
+          <button type="button" class="secondary-button" id="musicButton" aria-pressed="true">Music: On</button>
+        </div>
+      </div>
+      <div class="account-screen" id="accountScreen">
+        <form class="name-card" id="accountForm">
+          <h2>Welcome to Roll a Weapon!</h2>
+          <p>Sign in to continue your saved game, or create an account to start. Accounts are saved in this browser only.</p>
+          <label for="accountUsername">Username</label>
+          <input id="accountUsername" maxlength="24" required autocomplete="username" placeholder="Choose a username">
+          <label for="accountPassword">Password</label>
+          <input id="accountPassword" type="password" minlength="8" maxlength="128" required autocomplete="current-password" placeholder="At least 8 characters">
+          <div class="popup-actions">
+            <button type="button" id="signInButton">Sign in</button>
+            <button type="button" class="secondary-button" id="createAccountButton">Create account</button>
+          </div>
+          <p id="accountMessage" role="status" aria-live="polite"></p>
+        </form>
+      </div>
+      <div class="game-popup" id="shopPopup" hidden>
+        <div class="popup-card">
+          <h2>Shop</h2>
+          <p id="shopCoins">Coins: 0</p>
+          <p id="shopHealth">Health upgrade: +10 maximum health</p>
+          <p>Each upgrade costs 5 coins.</p>
+          <button type="button" class="shop-upgrade" id="buyHealthButton">Upgrade health (5 coins)</button>
+          <p id="shopLuck">Better weapon chance upgrade: +10% rare/epic chance per purchase</p>
+          <button type="button" class="shop-upgrade" id="buyLuckButton">Better weapon chance (+10%) — 20 coins</button>
+          <button type="button" class="secondary-button" id="closeShopButton">Back to menu</button>
+        </div>
+      </div>
+      <div class="game-popup" id="inventoryPopup" role="dialog" aria-modal="true" aria-labelledby="inventoryTitle" hidden>
+        <div class="popup-card inventory-card">
+          <h2 id="inventoryTitle">Weapon Inventory</h2>
+          <p id="inventorySummary"></p>
+          <div class="inventory-grid" id="inventoryItems"></div>
+          <button type="button" class="secondary-button" id="closeInventoryButton">Back to menu</button>
+        </div>
+      </div>
+      <div class="name-screen" id="nameScreen" hidden>
+        <form class="name-card" id="nameForm">
+          <h2>Welcome, adventurer!</h2>
+          <p>First, choose a name for your character.</p>
+          <label for="characterName">Character name</label>
+          <input id="characterName" name="characterName" maxlength="16" required autocomplete="off" placeholder="Type a name">
+          <button type="submit">Start playing</button>
+          <button type="button" class="secondary-button" id="nameBackButton">Back to account</button>
+        </form>
+      </div>
+      <div class="game-popup" id="weaponPopup" hidden>
+        <div class="popup-card">
+          <h2>You rolled your first weapon: the Whip!</h2>
+          <p class="rarity-common"><strong>Common</strong></p>
+          <p><strong>Damage:</strong> 10 per hit</p>
+          <p><strong>Range:</strong> 150 pixels — far-reaching!</p>
+          <p>Its unique hit is a long, cracking lash.</p>
+          <p>Evil bunnies have 15 health and take 5 health from you when they hit.</p>
+          <p>Move with WASD or the arrow keys. Press Space to attack. Rare and Epic weapons charge an ultimate after dealing 100 damage; press R to use it.</p>
+          <button type="button" id="beginGame">Start playing</button>
+        </div>
+      </div>
+      <div class="game-popup" id="weaponRevealPopup" hidden>
+        <div class="popup-card">
+          <h2 id="weaponRevealTitle"></h2>
+          <p id="weaponRevealRarity"></p>
+          <p id="weaponRevealDamage"></p>
+          <p id="weaponRevealEffect"></p>
+          <button type="button" id="weaponRevealContinue">Continue</button>
+        </div>
+      </div>
+      <div class="game-popup" id="wavePopup" hidden>
+        <div class="popup-card">
+          <h2 id="waveMessage">Wave cleared!</h2>
+          <p id="waveReward"></p>
+          <p id="rolledWeaponText"></p>
+          <div class="wheel-wrap" id="wheelWrap" hidden>
+            <span class="wheel-pointer" aria-hidden="true"></span>
+            <canvas class="wheel-canvas" id="rollWheel" width="300" height="300" aria-label="Weapon roll wheel"></canvas>
+          </div>
+          <div class="popup-actions">
+            <button type="button" id="keepWeaponButton">Keep weapon</button>
+            <button type="button" class="secondary-button" id="rollWeaponButton">Roll a new weapon</button>
+            <button type="button" class="secondary-button" id="waveShopButton">Visit shop</button>
+          </div>
+        </div>
+      </div>
+      <div class="game-popup" id="gameEndPopup" hidden>
+        <div class="popup-card">
+          <h2 id="gameEndMessage"></h2>
+          <button type="button" id="restartGame">Play again</button>
+        </div>
+      </div>
+      <div class="game-popup" id="bossDeathPopup" hidden>
+        <div class="popup-card">
+          <h2>Bunny Boss</h2>
+          <p id="bossDeathMessage">You beat me! I will come back to get my revenge!</p>
+        </div>
+      </div>
+      <div class="game-popup" id="airshipPopup" hidden>
+        <div class="popup-card">
+          <h2>The Land of the Gods</h2>
+          <p id="airshipMessage">An airship has arrived. It can take you to the Heavens Arena. Do you want to stay or go?</p>
+          <div class="popup-actions">
+            <button type="button" class="secondary-button" id="stayButton">Stay</button>
+            <button type="button" id="travelButton">Yes, I want to come</button>
+          </div>
+        </div>
+      </div>
+      <div class="game-popup" id="stormPopup" hidden>
+        <div class="popup-card">
+          <h2>Level 2 Storm City!</h2>
+          <p>The airship flies into a storm above the Heavens Arena...</p>
+        </div>
+      </div>
+    </section>
+    <div class="mobile-controls" aria-label="Movement controls">
+      <span></span><button type="button" data-direction="up" aria-label="Move up">▲</button><span></span>
+      <button type="button" data-direction="left" aria-label="Move left">◀</button>
+      <button type="button" data-direction="down" aria-label="Move down">▼</button>
+      <button type="button" data-direction="right" aria-label="Move right">▶</button>
+      <button type="button" data-attack>Attack</button>
+    </div>
+    <p class="instructions" id="playHelp" hidden>Move with W, A, S, D or the arrow keys. Press Space (or tap Attack) to attack. Press R to use a charged ultimate.</p>
+  </main>
+
+  <script>
+    const canvas = document.querySelector("#scene");
+    const ctx = canvas.getContext("2d");
+    const nameForm = document.querySelector("#nameForm");
+    const nameInput = document.querySelector("#characterName");
+    const nameScreen = document.querySelector("#nameScreen");
+    const mainMenu = document.querySelector("#mainMenu");
+    const accountScreen = document.querySelector("#accountScreen");
+    const accountForm = document.querySelector("#accountForm");
+    const accountUsernameInput = document.querySelector("#accountUsername");
+    const accountPasswordInput = document.querySelector("#accountPassword");
+    const accountMessage = document.querySelector("#accountMessage");
+    const signInButton = document.querySelector("#signInButton");
+    const createAccountButton = document.querySelector("#createAccountButton");
+    const menuDescription = document.querySelector("#menuDescription");
+    const keepPlayingButton = document.querySelector("#keepPlayingButton");
+    const inventoryPopup = document.querySelector("#inventoryPopup");
+    const inventoryItems = document.querySelector("#inventoryItems");
+    const inventorySummary = document.querySelector("#inventorySummary");
+    const openInventoryButton = document.querySelector("#openInventoryButton");
+    const closeInventoryButton = document.querySelector("#closeInventoryButton");
+    const musicButton = document.querySelector("#musicButton");
+    const shopPopup = document.querySelector("#shopPopup");
+    const shopCoins = document.querySelector("#shopCoins");
+    const shopHealth = document.querySelector("#shopHealth");
+    const shopLuck = document.querySelector("#shopLuck");
+    const buyLuckButton = document.querySelector("#buyLuckButton");
+    const healthDropText = document.querySelector("#healthDropText");
+    const weaponPopup = document.querySelector("#weaponPopup");
+    const weaponRevealPopup = document.querySelector("#weaponRevealPopup");
+    const weaponRevealTitle = document.querySelector("#weaponRevealTitle");
+    const weaponRevealRarity = document.querySelector("#weaponRevealRarity");
+    const weaponRevealDamage = document.querySelector("#weaponRevealDamage");
+    const weaponRevealEffect = document.querySelector("#weaponRevealEffect");
+    const weaponRevealContinue = document.querySelector("#weaponRevealContinue");
+    const wavePopup = document.querySelector("#wavePopup");
+    const waveMessage = document.querySelector("#waveMessage");
+    const waveReward = document.querySelector("#waveReward");
+    const rolledWeaponText = document.querySelector("#rolledWeaponText");
+    const wheelWrap = document.querySelector("#wheelWrap");
+    const wheelCanvas = document.querySelector("#rollWheel");
+    const wheelCtx = wheelCanvas.getContext("2d");
+    const keepWeaponButton = document.querySelector("#keepWeaponButton");
+    const rollWeaponButton = document.querySelector("#rollWeaponButton");
+    const beginGameButton = document.querySelector("#beginGame");
+    const gameEndPopup = document.querySelector("#gameEndPopup");
+    const gameEndMessage = document.querySelector("#gameEndMessage");
+    const restartButton = document.querySelector("#restartGame");
+    const bossDeathPopup = document.querySelector("#bossDeathPopup");
+    const airshipPopup = document.querySelector("#airshipPopup");
+    const airshipMessage = document.querySelector("#airshipMessage");
+    const stormPopup = document.querySelector("#stormPopup");
+    const gameHud = document.querySelector("#gameHud");
+    const healthText = document.querySelector("#healthText");
+    const healthFill = document.querySelector("#healthFill");
+    const healthTrack = document.querySelector(".health-track");
+    const bunnyCount = document.querySelector("#bunnyCount");
+    const waveText = document.querySelector("#waveText");
+    const coinsText = document.querySelector("#coinsText");
+    const weaponText = document.querySelector("#weaponText");
+    const ultimateText = document.querySelector("#ultimateText");
+    const playHelp = document.querySelector("#playHelp");
+    const heldKeys = new Set();
+    const player = {
+      x: 480, y: 391, name: "", speed: 220, health: 100, maxHealth: 100,
+      facingX: 1, facingY: 0, attackCooldown: 0, attackAnimation: 0,
+      hitCooldown: 0, ultimateCharge: 0, ultimateAnimation: 0,
+      ultimateName: "", ultimateColor: "#bd71e8"
+    };
+    const saveKey = "roll-a-weapon-story-save";
+    const accountsKey = "roll-a-weapon-accounts";
+    const weapons = [
+      { name: "Whip", rarity: "Common", damage: 10, range: 150, type: "whip" },
+      { name: "Sword", rarity: "Common", damage: 15, range: 65, type: "sword" },
+      { name: "Bow and Arrow", rarity: "Common", damage: 5, range: 320, type: "bow" },
+      { name: "Base Scythe", rarity: "Rare", damage: 25, range: 72, type: "scythe" },
+      { name: "Double-Sided Axe", rarity: "Rare", damage: 30, range: 78, type: "axe" },
+      { name: "Hero's Sword", rarity: "Epic", damage: 10, range: 65, type: "heroSword", airDamage: 30 },
+      { name: "Lightning Spear", rarity: "Epic", damage: 20, lightningDamage: 20, range: 160, type: "lightningSpear" }
+    ];
+    function readSavedGame() {
+      try {
+        const saved = localStorage.getItem(saveKey);
+        if (!saved) return null;
+        const data = JSON.parse(saved);
+        return data && data.version === 1 ? data : null;
+      } catch (error) {
+        console.error("Could not read the saved game.", error);
+        return null;
+      }
+    }
+    function readAccounts() {
+      try {
+        const stored = localStorage.getItem(accountsKey);
+        if (!stored) return {};
+        const parsed = JSON.parse(stored);
+        return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed : {};
+      } catch (error) {
+        console.error("Could not read local accounts.", error);
+        return {};
+      }
+    }
+
+    function persistAccounts() {
+      try {
+        localStorage.setItem(accountsKey, JSON.stringify(accounts));
+        saveWarning = "";
+        return true;
+      } catch (error) {
+        saveWarning = "Progress could not be saved in this browser.";
+        console.error("Could not save local accounts.", error);
+        return false;
+      }
+    }
+
+    async function hashPassword(password, salt) {
+      if (!globalThis.crypto?.subtle) {
+        throw new Error("Secure password hashing is unavailable. Open the game using its HTTPS browser link.");
+      }
+      const key = await crypto.subtle.importKey("raw", new TextEncoder().encode(password), "PBKDF2", false, ["deriveBits"]);
+      const saltBytes = Uint8Array.from(atob(salt), (character) => character.charCodeAt(0));
+      const result = await crypto.subtle.deriveBits(
+        { name: "PBKDF2", salt: saltBytes, iterations: 150000, hash: "SHA-256" },
+        key,
+        256
+      );
+      return btoa(String.fromCharCode(...new Uint8Array(result)));
+    }
+
+    function createPasswordSalt() {
+      const bytes = crypto.getRandomValues(new Uint8Array(16));
+      return btoa(String.fromCharCode(...bytes));
+    }
+
+    function passwordsMatch(first, second) {
+      if (first.length !== second.length) return false;
+      let difference = 0;
+      for (let index = 0; index < first.length; index++) difference |= first.charCodeAt(index) ^ second.charCodeAt(index);
+      return difference === 0;
+    }
+
+    let accounts = readAccounts();
+    let savedGame = null;
+    let hasSavedGame = false;
+    let activeUsername = "";
+    let chapter = 1;
+    let spearUnlocked = false;
+    let unlockedWeaponNames = new Set(["Whip"]);
+    let weapon = weapons[0];
+    let wave = 1;
+    let coins = 0;
+    let weaponLuckUpgrades = 0;
+    let enemies = [];
+    let projectiles = [];
+    let clouds = [
+      { x: 100, y: 90, size: 1, speed: 15 },
+      { x: 400, y: 145, size: 0.8, speed: 10 },
+      { x: 760, y: 75, size: 1.2, speed: 13 }
+    ];
+    let lastFrame = 0;
+    let isPlaying = false;
+    let gameEnded = false;
+    let shopReturnsToWave = false;
+    let isRolling = false;
+    let rollResultReady = false;
+    let sceneTheme = "meadow";
+    let cutsceneTimer = 0;
+    let bossDeathActive = false;
+    let stormTravelTimer = 0;
+    let nextStormFlash = 2;
+    let stormFlashTimer = 0;
+    let ambientBoltX = 600;
+    let rainOffset = 0;
+    let lightningStrikes = [];
+    let impactEffects = [];
+    let healthDrop = null;
+    let healthDropTimer = 10;
+    let saveWarning = "";
+    let ultimateStormTime = 0;
+    let ultimateStormTimer = 0;
+    let cinematicFreeze = 0;
+    let musicContext = null;
+    let musicMaster = null;
+    let musicTimer = null;
+    let musicScene = "menu";
+    let musicStep = 0;
+    let musicEnabled = true;
+    const musicPatterns = {
+      menu: { tempo: 520, notes: [0, 4, 7, 11, 7, 4, null, 2], bass: [0, -5], wave: "sine" },
+      wave: { tempo: 330, notes: [0, 7, 9, 7, 4, 7, 12, 9], bass: [0, 0, -5, -2], wave: "triangle" },
+      boss: { tempo: 230, notes: [0, null, 3, 7, 6, null, 3, -2], bass: [0, 0, -3, -5], wave: "sawtooth" },
+      dialogue: { tempo: 610, notes: [0, 5, 9, null, 7, 4, 2, null], bass: [0, -3], wave: "sine" },
+      lose: { tempo: 680, notes: [0, -3, -5, -8, -5, -3, null, -10], bass: [0, -3], wave: "sine" },
+      win: { tempo: 290, notes: [0, 4, 7, 12, 11, 7, 4, 12], bass: [0, 5, 7, 5], wave: "triangle" }
+    };
+
+    function getRollTable() {
+      const baseBetterChance = spearUnlocked ? 40 : 30;
+      const betterChance = Math.min(80, baseBetterChance + weaponLuckUpgrades * 10);
+      const betterChanceScale = betterChance / baseBetterChance;
+      const commonChance = (100 - betterChance) / 3;
+      return [
+        { name: "Whip", chance: commonChance },
+        { name: "Sword", chance: commonChance },
+        { name: "Bow and Arrow", chance: commonChance },
+        { name: "Base Scythe", chance: 10 * betterChanceScale },
+        { name: "Double-Sided Axe", chance: 10 * betterChanceScale },
+        { name: "Hero's Sword", chance: 10 * betterChanceScale },
+        { name: "Lightning Spear", chance: spearUnlocked ? 10 * betterChanceScale : 0 }
+      ];
+    }
+
+    function createWaveEnemies(number) {
+      const spawns = [{ x: 120, y: 435 }, { x: 840, y: 435 }, { x: 700, y: 500 }];
+      if (chapter === 2) {
+        if (number === 1) {
+          return spawns.map((spawn) => ({
+            ...spawn, health: 30, maxHealth: 30, type: "fighter", attackTimer: 1.2, attackDamage: 20
+          }));
+        }
+        if (number === 2) {
+          return spawns.map((spawn) => ({
+            ...spawn, health: 50, maxHealth: 50, type: "guard"
+          }));
+        }
+        return [{
+          x: 760, y: 440, health: 200, maxHealth: 200,
+          type: "lightningBoss", attackTimer: 1.5, attackDamage: 50
+        }];
+      }
+      if (number === 3) return [{ x: 760, y: 440, health: 50, maxHealth: 50, type: "boss", attackTimer: 1.4 }];
+      const isBig = number === 2;
+      return spawns.map((spawn) => ({
+        ...spawn, health: isBig ? 25 : 15, maxHealth: isBig ? 25 : 15,
+        type: isBig ? "big" : "bunny"
+      }));
+    }
+
+    function saveProgress(checkpoint, savedWave = wave) {
+      const progress = {
+        version: 1,
+        chapter,
+        checkpoint,
+        wave: savedWave,
+        name: player.name,
+        coins,
+        maxHealth: player.maxHealth,
+        health: player.health,
+        weaponName: weapon.name,
+        unlockedWeaponNames: [...unlockedWeaponNames],
+        spearUnlocked,
+        weaponLuckUpgrades
+      };
+      if (!activeUsername || !accounts[activeUsername]) {
+        saveWarning = "Sign in to save your progress.";
+        console.error("Could not save game progress because no account is signed in.");
+        return;
+      }
+      accounts[activeUsername].save = progress;
+      savedGame = progress;
+      hasSavedGame = true;
+      persistAccounts();
+    }
+
+    function isWeaponUnlocked(item) {
+      return unlockedWeaponNames.has(item.name) ||
+        (item.type === "lightningSpear" && spearUnlocked);
+    }
+
+    function drawInventoryIcon(canvas, item, unlocked) {
+      canvas.width = 150;
+      canvas.height = 100;
+      const icon = canvas.getContext("2d");
+      if (!icon) return;
+      const dark = "#273440";
+      const metal = unlocked
+        ? item.type === "heroSword" ? "#b493ef" : item.type === "lightningSpear" ? "#68dff5" : "#c4d6df"
+        : dark;
+      const wood = unlocked ? "#805633" : dark;
+      icon.save();
+      icon.translate(75, 52);
+      icon.lineCap = "round";
+      icon.lineJoin = "round";
+      icon.strokeStyle = wood;
+      icon.fillStyle = metal;
+      if (item.type === "whip") {
+        icon.lineWidth = 6;
+        icon.beginPath();
+        icon.moveTo(-44, 27);
+        icon.lineTo(-27, 8);
+        icon.bezierCurveTo(-3, -23, 24, 27, 49, -19);
+        icon.stroke();
+        icon.lineWidth = 2;
+        icon.strokeStyle = unlocked ? "#f5d28a" : dark;
+        icon.stroke();
+      } else if (item.type === "bow") {
+        icon.lineWidth = 5;
+        icon.beginPath();
+        icon.arc(-8, 0, 34, -1.05, 1.05);
+        icon.stroke();
+        icon.strokeStyle = unlocked ? "#eee4c5" : dark;
+        icon.lineWidth = 2;
+        icon.beginPath();
+        icon.moveTo(10, -29);
+        icon.lineTo(10, 29);
+        icon.moveTo(-1, 0);
+        icon.lineTo(48, 0);
+        icon.lineTo(37, -6);
+        icon.moveTo(48, 0);
+        icon.lineTo(37, 6);
+        icon.stroke();
+      } else if (item.type === "sword" || item.type === "heroSword") {
+        icon.strokeStyle = wood;
+        icon.lineWidth = 8;
+        icon.beginPath();
+        icon.moveTo(-34, 30);
+        icon.lineTo(-13, 9);
+        icon.stroke();
+        icon.strokeStyle = unlocked ? "#d9b477" : dark;
+        icon.lineWidth = 5;
+        icon.beginPath();
+        icon.moveTo(-23, 1);
+        icon.lineTo(-4, 20);
+        icon.stroke();
+        icon.fillStyle = metal;
+        icon.beginPath();
+        icon.moveTo(-11, 12);
+        icon.lineTo(29, -36);
+        icon.lineTo(23, -5);
+        icon.lineTo(-4, 20);
+        icon.closePath();
+        icon.fill();
+      } else if (item.type === "scythe") {
+        icon.strokeStyle = wood;
+        icon.lineWidth = 7;
+        icon.beginPath();
+        icon.moveTo(-30, 34);
+        icon.lineTo(15, -29);
+        icon.stroke();
+        icon.fillStyle = metal;
+        icon.beginPath();
+        icon.moveTo(10, -24);
+        icon.quadraticCurveTo(32, -52, 53, -36);
+        icon.quadraticCurveTo(31, -39, 20, -9);
+        icon.quadraticCurveTo(14, 2, 0, 3);
+        icon.quadraticCurveTo(13, -10, 10, -24);
+        icon.closePath();
+        icon.fill();
+      } else if (item.type === "axe") {
+        icon.strokeStyle = wood;
+        icon.lineWidth = 8;
+        icon.beginPath();
+        icon.moveTo(-34, 32);
+        icon.lineTo(34, -32);
+        icon.stroke();
+        icon.fillStyle = metal;
+        icon.beginPath();
+        icon.moveTo(-29, 27); icon.lineTo(-43, 8); icon.lineTo(-15, 13); icon.closePath();
+        icon.moveTo(29, -27); icon.lineTo(43, -8); icon.lineTo(15, -13); icon.closePath();
+        icon.fill();
+      } else if (item.type === "lightningSpear") {
+        icon.strokeStyle = wood;
+        icon.lineWidth = 7;
+        icon.beginPath();
+        icon.moveTo(-37, 32);
+        icon.lineTo(34, -34);
+        icon.stroke();
+        icon.fillStyle = unlocked ? "#f7e66b" : dark;
+        icon.beginPath();
+        icon.moveTo(47, -47);
+        icon.lineTo(18, -39);
+        icon.lineTo(31, -29);
+        icon.lineTo(19, -10);
+        icon.lineTo(52, -31);
+        icon.lineTo(39, -36);
+        icon.closePath();
+        icon.fill();
+      }
+      icon.restore();
+    }
+
+    function updateInventory() {
+      const unlockedCount = weapons.filter(isWeaponUnlocked).length;
+      inventorySummary.textContent = `${unlockedCount} of ${weapons.length} weapons unlocked`;
+      inventoryItems.replaceChildren();
+      for (const item of weapons) {
+        const unlocked = isWeaponUnlocked(item);
+        const card = document.createElement("article");
+        card.className = "inventory-item";
+        const art = document.createElement("canvas");
+        art.className = "inventory-art";
+        art.setAttribute("aria-hidden", "true");
+        drawInventoryIcon(art, item, unlocked);
+        const name = document.createElement("h3");
+        name.textContent = item.name;
+        const rarity = document.createElement("p");
+        rarity.className = `rarity-${item.rarity.toLowerCase()}`;
+        rarity.textContent = item.rarity;
+        const status = document.createElement("p");
+        status.className = unlocked ? "inventory-unlocked" : "inventory-locked";
+        status.textContent = unlocked
+          ? "Unlocked"
+          : item.type === "lightningSpear" ? "Locked — boss drop" : "Locked — roll to unlock";
+        card.append(art, name, rarity, status);
+        inventoryItems.append(card);
+      }
+    }
+
+    function updateMusicButton() {
+      musicButton.textContent = `Music: ${musicEnabled ? "On" : "Off"}`;
+      musicButton.setAttribute("aria-pressed", String(musicEnabled));
+    }
+
+    function playMusicTone(semitone, waveform, duration, volume) {
+      const now = musicContext.currentTime;
+      const oscillator = musicContext.createOscillator();
+      const envelope = musicContext.createGain();
+      oscillator.type = waveform;
+      oscillator.frequency.value = 220 * Math.pow(2, semitone / 12);
+      envelope.gain.setValueAtTime(0.0001, now);
+      envelope.gain.linearRampToValueAtTime(volume, now + 0.025);
+      envelope.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+      oscillator.connect(envelope);
+      envelope.connect(musicMaster);
+      oscillator.start(now);
+      oscillator.stop(now + duration + 0.02);
+    }
+
+    function playMusicBeat() {
+      if (!musicContext || musicContext.state !== "running" || !musicEnabled) return;
+      const pattern = musicPatterns[musicScene];
+      const noteIndex = musicStep % pattern.notes.length;
+      const note = pattern.notes[noteIndex];
+      if (note !== null) {
+        playMusicTone(note, pattern.wave, 0.24, 0.035);
+      }
+      if (musicStep % 2 === 0) {
+        const bass = pattern.bass[Math.floor(musicStep / 2) % pattern.bass.length];
+        playMusicTone(bass - 12, "sine", 0.34, 0.055);
+      }
+      musicStep++;
+    }
+
+    function startMusic() {
+      if (!musicEnabled) return;
+      const AudioContextType = window.AudioContext || window.webkitAudioContext;
+      if (!AudioContextType) {
+        musicButton.disabled = true;
+        musicButton.textContent = "Music unavailable";
+        return;
+      }
+      if (!musicContext) {
+        musicContext = new AudioContextType();
+        musicMaster = musicContext.createGain();
+        musicMaster.gain.value = 0.12;
+        musicMaster.connect(musicContext.destination);
+      }
+      if (musicContext.state === "suspended") {
+        musicContext.resume().catch((error) => console.error("Could not start game music.", error));
+      }
+      if (musicTimer !== null) return;
+      musicStep = 0;
+      musicTimer = globalThis.setInterval(playMusicBeat, musicPatterns[musicScene].tempo);
+      playMusicBeat();
+    }
+
+    function setMusicScene(scene) {
+      if (!musicPatterns[scene]) return;
+      musicScene = scene;
+      if (!musicEnabled || !musicContext) return;
+      if (musicTimer !== null) globalThis.clearInterval(musicTimer);
+      musicTimer = null;
+      musicStep = 0;
+      startMusic();
+    }
+
+    function toggleMusic() {
+      musicEnabled = !musicEnabled;
+      if (!musicEnabled) {
+        if (musicTimer !== null) globalThis.clearInterval(musicTimer);
+        musicTimer = null;
+        if (musicContext && musicMaster) {
+          musicMaster.gain.setTargetAtTime(0, musicContext.currentTime, 0.04);
+        }
+      } else {
+        if (musicMaster && musicContext) musicMaster.gain.setTargetAtTime(0.12, musicContext.currentTime, 0.04);
+        startMusic();
+      }
+      updateMusicButton();
+    }
+
+    function showLoadingMenu() {
+      accountScreen.hidden = true;
+      inventoryPopup.hidden = true;
+      keepPlayingButton.hidden = false;
+      menuDescription.textContent = "Your progress is saved. Keep playing whenever you are ready.";
+      gameHud.hidden = true;
+      playHelp.hidden = true;
+      weaponPopup.hidden = true;
+      weaponRevealPopup.hidden = true;
+      wavePopup.hidden = true;
+      shopPopup.hidden = true;
+      gameEndPopup.hidden = true;
+      nameScreen.hidden = true;
+      mainMenu.hidden = false;
+      setMusicScene("menu");
+    }
+
+    function showAccountScreen(message = "") {
+      activeUsername = "";
+      mainMenu.hidden = true;
+      inventoryPopup.hidden = true;
+      accountScreen.hidden = false;
+      nameScreen.hidden = true;
+      accountPasswordInput.value = "";
+      accountMessage.textContent = message;
+      accountUsernameInput.focus();
+      setMusicScene("menu");
+    }
+
+    function startAccountGame() {
+      hasSavedGame = false;
+      savedGame = null;
+      chapter = 1;
+      spearUnlocked = false;
+      weaponLuckUpgrades = 0;
+      weapon = weapons[0];
+      unlockedWeaponNames = new Set(["Whip"]);
+      wave = 1;
+      coins = 0;
+      healthDrop = null;
+      healthDropTimer = 10;
+      player.name = "";
+      player.health = 100;
+      player.maxHealth = 100;
+      player.ultimateCharge = 0;
+      player.hitCooldown = 0;
+      player.attackCooldown = 0;
+      enemies = [];
+      projectiles = [];
+      bossDeathActive = false;
+      gameEnded = false;
+      isPlaying = false;
+      sceneTheme = "meadow";
+      gameHud.hidden = true;
+      playHelp.hidden = true;
+      gameEndPopup.hidden = true;
+      airshipPopup.hidden = true;
+      stormPopup.hidden = true;
+      bossDeathPopup.hidden = true;
+      accountScreen.hidden = true;
+      mainMenu.hidden = true;
+      nameInput.value = "";
+      nameScreen.hidden = false;
+      nameInput.focus();
+      setMusicScene("menu");
+    }
+
+    function startAirshipCutscene() {
+      chapter = 2;
+      sceneTheme = "meadow";
+      cutsceneTimer = 0;
+      setMusicScene("dialogue");
+      mainMenu.hidden = true;
+      gameHud.hidden = true;
+      playHelp.hidden = true;
+      airshipMessage.textContent = "An airship has arrived. It can take you to the Land of the Gods and the Heavens Arena. Do you want to stay or go?";
+      airshipPopup.hidden = false;
+    }
+
+    function loadSavedGame() {
+      if (!savedGame) return;
+      chapter = savedGame.chapter === 2 ? 2 : 1;
+      coins = Number.isFinite(savedGame.coins) ? savedGame.coins : coins;
+      player.maxHealth = Number.isFinite(savedGame.maxHealth) ? savedGame.maxHealth : player.maxHealth;
+      player.health = Number.isFinite(savedGame.health)
+        ? Math.min(player.maxHealth, Math.max(1, savedGame.health))
+        : player.maxHealth;
+      player.name = typeof savedGame.name === "string" ? savedGame.name : player.name;
+      spearUnlocked = savedGame.spearUnlocked === true;
+      weaponLuckUpgrades = Number.isInteger(savedGame.weaponLuckUpgrades)
+        ? Math.max(0, Math.min(5, savedGame.weaponLuckUpgrades))
+        : 0;
+      weapon = weapons.find((item) => item.name === savedGame.weaponName) || weapons[0];
+      const savedUnlocks = Array.isArray(savedGame.unlockedWeaponNames)
+        ? savedGame.unlockedWeaponNames.filter((name) => weapons.some((item) => item.name === name))
+        : [];
+      if (weapons.some((item) => item.name === savedGame.weaponName)) savedUnlocks.push(savedGame.weaponName);
+      unlockedWeaponNames = new Set(["Whip", ...savedUnlocks]);
+      if (spearUnlocked) unlockedWeaponNames.add("Lightning Spear");
+      player.ultimateCharge = 0;
+      showLoadingMenu();
+    }
+
+    function continueSavedGame() {
+      if (!savedGame) {
+        startAccountGame();
+        return;
+      }
+      if (savedGame.checkpoint === "airship") {
+        startAirshipCutscene();
+        return;
+      }
+      sceneTheme = chapter === 2 ? "storm" : "meadow";
+      mainMenu.hidden = true;
+      gameHud.hidden = false;
+      playHelp.hidden = false;
+      startWave([1, 2, 3].includes(savedGame.wave) ? savedGame.wave : 1);
+    }
+
+    async function authenticateAccount(createAccount) {
+      if (!accountForm.reportValidity()) return;
+      const username = accountUsernameInput.value.trim();
+      const normalizedUsername = username.toLowerCase();
+      const password = accountPasswordInput.value;
+      if (!/^[a-zA-Z0-9_]{3,24}$/.test(username)) {
+        accountMessage.textContent = "Usernames must be 3–24 letters, numbers, or underscores.";
+        return;
+      }
+      accountMessage.textContent = createAccount ? "Creating your account..." : "Signing in...";
+      signInButton.disabled = true;
+      createAccountButton.disabled = true;
+      try {
+        const existing = accounts[normalizedUsername];
+        if (createAccount) {
+          if (existing) {
+            accountMessage.textContent = "That username already exists. Sign in with its password.";
+            return;
+          }
+          const salt = createPasswordSalt();
+          const passwordHash = await hashPassword(password, salt);
+          const previousSave = readSavedGame();
+          accounts[normalizedUsername] = {
+            username,
+            salt,
+            passwordHash,
+            save: previousSave
+          };
+          if (!persistAccounts()) {
+            delete accounts[normalizedUsername];
+            accountMessage.textContent = "Could not create an account in this browser. Check storage permissions and try again.";
+            return;
+          }
+        } else {
+          if (!existing) {
+            accountMessage.textContent = "No account has that username yet. Create an account first.";
+            return;
+          }
+          const passwordHash = await hashPassword(password, existing.salt);
+          if (!passwordsMatch(passwordHash, existing.passwordHash)) {
+            accountMessage.textContent = "That username and password do not match.";
+            return;
+          }
+        }
+
+        const account = accounts[normalizedUsername];
+        activeUsername = normalizedUsername;
+        savedGame = account.save && account.save.version === 1 ? account.save : null;
+        hasSavedGame = Boolean(savedGame);
+        player.name = typeof savedGame?.name === "string" ? savedGame.name : username.slice(0, 16);
+        player.maxHealth = Number.isFinite(savedGame?.maxHealth) ? Math.max(100, savedGame.maxHealth) : 100;
+        player.health = Number.isFinite(savedGame?.health)
+          ? Math.min(player.maxHealth, Math.max(1, savedGame.health))
+          : player.maxHealth;
+        coins = Number.isFinite(savedGame?.coins) ? savedGame.coins : 0;
+        weaponLuckUpgrades = Number.isInteger(savedGame?.weaponLuckUpgrades)
+          ? Math.max(0, Math.min(5, savedGame.weaponLuckUpgrades))
+          : 0;
+        spearUnlocked = savedGame?.spearUnlocked === true;
+        weapon = weapons.find((item) => item.name === savedGame?.weaponName) || weapons[0];
+        chapter = savedGame?.chapter === 2 ? 2 : 1;
+        wave = [1, 2, 3].includes(savedGame?.wave) ? savedGame.wave : 1;
+        player.ultimateCharge = 0;
+        if (savedGame) loadSavedGame();
+        else startAccountGame();
+      } catch (error) {
+        console.error("Account sign-in failed.", error);
+        accountMessage.textContent = error.message || "Could not sign in. Please try again.";
+      } finally {
+        signInButton.disabled = false;
+        createAccountButton.disabled = false;
+      }
+    }
+
+    function startStormTravel() {
+      airshipPopup.hidden = true;
+      sceneTheme = "storm";
+      stormTravelTimer = 2.2;
+      stormPopup.hidden = false;
+      cutsceneTimer = 0;
+      setMusicScene("dialogue");
+    }
+
+    function updateHud() {
+      healthText.textContent = `Health: ${player.health} / ${player.maxHealth}`;
+      healthFill.style.width = `${player.health / player.maxHealth * 100}%`;
+      healthFill.style.backgroundColor = player.health <= player.maxHealth * 0.3 ? "#e64b4b" :
+        player.health <= player.maxHealth * 0.6 ? "#e6ae36" : "#4bc66b";
+      healthTrack.setAttribute("aria-valuemax", String(player.maxHealth));
+      healthTrack.setAttribute("aria-valuenow", String(player.health));
+      waveText.textContent = `${chapter === 2 ? "Level 2 Storm City" : "Story"} — Wave: ${wave} / 3`;
+      bunnyCount.textContent = `${chapter === 2 ? "Enemies" : "Evil bunnies"}: ${enemies.length}`;
+      coinsText.textContent = `Coins: ${coins}`;
+      weaponText.textContent = `Weapon: ${weapon.name} (${weapon.rarity})`;
+      ultimateText.textContent = weapon.rarity === "Common"
+        ? "Ultimate: unavailable for Common weapons"
+        : `Ultimate: ${Math.floor(player.ultimateCharge)} / 100 damage (R)`;
+      shopCoins.textContent = `Coins: ${coins}`;
+      shopHealth.textContent = `Health: ${player.maxHealth} maximum (+10 per upgrade)`;
+      const betterChance = Math.min(80, (spearUnlocked ? 40 : 30) + weaponLuckUpgrades * 10);
+      shopLuck.textContent = `Better weapon chance: ${betterChance}% (upgrade limit: 80%)`;
+      const dropSeconds = healthDrop ? 0 : Math.max(0, Math.ceil(healthDropTimer));
+      healthDropText.textContent = saveWarning || (healthDrop
+        ? "Health drop: grab the heart!"
+        : `Health drop: ${dropSeconds}s`);
+      const maxLuckUpgrades = Math.floor((80 - (spearUnlocked ? 40 : 30)) / 10);
+      buyLuckButton.disabled = weaponLuckUpgrades >= maxLuckUpgrades;
+      buyLuckButton.textContent = weaponLuckUpgrades >= maxLuckUpgrades
+        ? "Better weapon chance (MAX)"
+        : "Better weapon chance (+10%) — 20 coins";
+    }
+
+    function finishGame(message, ending = "win") {
+      if (gameEnded) return;
+      gameEnded = true;
+      isPlaying = false;
+      setMusicScene(ending);
+      gameEndMessage.textContent = message;
+      restartButton.textContent = "Keep Playing";
+      gameEndPopup.hidden = false;
+      heldKeys.clear();
+    }
+
+    function defeatEnemy(enemy, damage) {
+      if (enemy.health <= 0 || enemy.dying) return;
+      enemy.health -= damage;
+      if (weapon.rarity !== "Common") player.ultimateCharge = Math.min(100, player.ultimateCharge + damage);
+      if (enemy.health <= 0 && chapter === 1 && wave === 3 && enemy.type === "boss") {
+        enemy.health = 0;
+        enemy.dying = true;
+        enemy.deathTimer = 0;
+        bossDeathActive = true;
+        isPlaying = false;
+        cutsceneTimer = 0;
+        coins += 5;
+        bossDeathPopup.hidden = false;
+        setMusicScene("dialogue");
+        heldKeys.clear();
+      }
+    }
+
+    function applyDamage(testHit, damage) {
+      for (const enemy of enemies) {
+        const hitDamage = testHit(enemy);
+        if (hitDamage > 0) {
+          defeatEnemy(enemy, hitDamage);
+          impactEffects.push({
+            x: enemy.x, y: enemy.y - 12, life: 0.36, color:
+              weapon.type === "lightningSpear" ? "#75eaff" :
+                weapon.type === "heroSword" ? "#a4e8ff" :
+                  weapon.type === "axe" ? "#ffe09a" :
+                    weapon.type === "scythe" ? "#d9e1e8" : "#fff3c1"
+          });
+        }
+      }
+      enemies = enemies.filter((enemy) => enemy.health > 0 || enemy.dying);
+      if (!enemies.length) completeWave();
+      updateHud();
+    }
+
+    function completeWave() {
+      if (!isPlaying) return;
+      isPlaying = false;
+      heldKeys.clear();
+      coins += 5;
+      if (chapter === 2 && wave === 3) {
+        const foundSpear = Math.random() < 0.1;
+        if (foundSpear) {
+          spearUnlocked = true;
+          unlockedWeaponNames.add("Lightning Spear");
+        }
+        else coins += 50;
+        saveProgress("lightning", 1);
+        updateHud();
+        finishGame(foundSpear
+          ? "The Lightning Boss fell! You found the Lightning Spear. It is now on the weapon wheel!"
+          : "The Lightning Boss fell! You found 50 coins.");
+        return;
+      }
+      saveProgress(chapter === 2 ? "lightning" : "story", Math.min(3, wave + 1));
+      waveMessage.textContent = `Wave ${wave} cleared!`;
+      waveReward.textContent = `You earned 5 coins. ${chapter === 2 ? "Lightning Arena wave cleared!" : ""}`;
+      rolledWeaponText.textContent = "";
+      rolledWeaponText.className = "";
+      wheelWrap.hidden = true;
+      weaponRevealPopup.hidden = true;
+      keepWeaponButton.hidden = false;
+      keepWeaponButton.disabled = false;
+      rollWeaponButton.disabled = false;
+      rollWeaponButton.textContent = "Roll a new weapon";
+      isRolling = false;
+      rollResultReady = false;
+      wavePopup.hidden = false;
+      if (chapter === 2) saveProgress("lightning", wave);
+      else saveProgress("story", wave);
+      updateHud();
+    }
+
+    function finishBunnyBossScene() {
+      bossDeathActive = false;
+      bossDeathPopup.hidden = true;
+      enemies = [];
+      projectiles = [];
+      chapter = 2;
+      wave = 1;
+      sceneTheme = "meadow";
+      gameHud.hidden = true;
+      playHelp.hidden = true;
+      saveProgress("airship", 1);
+      updateHud();
+      showLoadingMenu();
+    }
+
+    function updateCutscenes(delta) {
+      if (bossDeathActive) {
+        const boss = enemies.find((enemy) => enemy.dying);
+        if (boss) boss.deathTimer += delta;
+        cutsceneTimer += delta;
+        if (cutsceneTimer >= 4.8) finishBunnyBossScene();
+      }
+      if (!airshipPopup.hidden) cutsceneTimer += delta;
+      if (!stormPopup.hidden) {
+        cutsceneTimer += delta;
+        stormTravelTimer -= delta;
+        if (stormTravelTimer <= 0) {
+          stormPopup.hidden = true;
+          gameHud.hidden = false;
+          playHelp.hidden = false;
+          startWave(1, true);
+          saveProgress("lightning", 1);
+        }
+      }
+    }
+
+    function getEnemyHit(enemy, range, damage, facingDotMin = 0.3) {
+      const dx = enemy.x - player.x;
+      const dy = enemy.y - player.y;
+      const distance = Math.hypot(dx, dy);
+      const facingDot = distance ? (dx * player.facingX + dy * player.facingY) / distance : 1;
+      return distance <= range && facingDot >= facingDotMin ? damage : 0;
+    }
+
+    function attack() {
+      if (!isPlaying || player.attackCooldown > 0) return;
+      player.attackCooldown = weapon.type === "bow" ? 0.55 : 0.45;
+      player.attackAnimation = 0.24;
+      if (weapon.type === "bow") {
+        projectiles.push({
+          x: player.x, y: player.y - 8, vx: player.facingX * 380, vy: player.facingY * 380,
+          damage: weapon.damage, type: "arrow", life: 0.9
+        });
+      } else if (weapon.type === "lightningSpear") {
+        const totalDamage = weapon.damage + weapon.lightningDamage;
+        for (const enemy of enemies) {
+          if (getEnemyHit(enemy, weapon.range, totalDamage)) {
+            lightningStrikes.push({ x: enemy.x, y: enemy.y, life: 0.28 });
+          }
+        }
+        applyDamage((enemy) => getEnemyHit(enemy, weapon.range, totalDamage), totalDamage);
+      } else {
+        applyDamage((enemy) => getEnemyHit(enemy, weapon.range, weapon.damage), weapon.damage);
+        if (weapon.type === "heroSword") {
+          projectiles.push({
+            x: player.x + player.facingX * 24,
+            y: player.y - 8 + player.facingY * 24,
+            vx: player.facingX * 520,
+            vy: player.facingY * 520,
+            damage: weapon.airDamage,
+            type: "heroSlash",
+            life: 0.7,
+            phase: 0,
+            hitEnemies: new Set()
+          });
+        }
+      }
+    }
+
+    function useUltimate() {
+      if (!isPlaying || weapon.rarity === "Common" || player.ultimateCharge < 100 || player.attackCooldown > 0) return;
+      player.ultimateCharge = 0;
+      player.attackCooldown = 0.8;
+      player.ultimateAnimation = 1.5;
+      cinematicFreeze = 0.35;
+      const ultimateNames = {
+        scythe: "REAPER'S SPIN",
+        axe: "THUNDERING THROW",
+        heroSword: "HERO'S SKY-CLEAVING SLASH",
+        lightningSpear: "TEMPEST OF A THOUSAND BOLTS"
+      };
+      player.ultimateName = ultimateNames[weapon.type] || "ULTIMATE STRIKE";
+      player.ultimateColor = weapon.type === "lightningSpear" ? "#76edff" :
+        weapon.type === "scythe" ? "#d7e0e8" :
+          weapon.type === "axe" ? "#ffd070" : "#d59bff";
+      if (weapon.type === "lightningSpear") {
+        ultimateStormTime = 3.2;
+        ultimateStormTimer = 0;
+        updateHud();
+        return;
+      }
+      const damage = weapon.damage * 3;
+      if (weapon.type === "scythe") {
+        applyDamage((enemy) => Math.hypot(enemy.x - player.x, enemy.y - player.y) <= 135 ? damage : 0, damage);
+      } else if (weapon.type === "axe") {
+        applyDamage((enemy) => getEnemyHit(enemy, 360, damage, 0.55), damage);
+      } else if (weapon.type === "heroSword") {
+        applyDamage((enemy) => getEnemyHit(enemy, 360, weapon.airDamage * 3, 0.2), weapon.airDamage * 3);
+      }
+      updateHud();
+    }
+
+    function drawCloud(x, y, scale, color = "#fff") {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.scale(scale, scale);
+      ctx.fillStyle = color;
+      ctx.shadowColor = color;
+      ctx.shadowBlur = 12;
+      ctx.beginPath();
+      ctx.arc(-28, 4, 20, 0, Math.PI * 2);
+      ctx.arc(-6, -8, 27, 0, Math.PI * 2);
+      ctx.arc(20, 1, 21, 0, Math.PI * 2);
+      ctx.arc(0, 10, 25, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+
+    function drawBackdrop(stormy, delta) {
+      if (stormy) {
+        const skyline = [
+          { x: 0, w: 70, h: 72 }, { x: 78, w: 54, h: 118 }, { x: 143, w: 80, h: 88 },
+          { x: 235, w: 62, h: 145 }, { x: 307, w: 86, h: 96 }, { x: 402, w: 58, h: 125 },
+          { x: 470, w: 82, h: 78 }, { x: 562, w: 62, h: 156 }, { x: 635, w: 88, h: 104 },
+          { x: 734, w: 62, h: 138 }, { x: 806, w: 76, h: 86 }, { x: 890, w: 70, h: 120 }
+        ];
+        for (const building of skyline) {
+          const top = 365 - building.h;
+          const gradient = ctx.createLinearGradient(0, top, 0, 365);
+          gradient.addColorStop(0, "#263650");
+          gradient.addColorStop(1, "#18263c");
+          ctx.fillStyle = gradient;
+          ctx.fillRect(building.x, top, building.w, building.h);
+          ctx.fillStyle = "#f4d875";
+          for (let wx = building.x + 10; wx < building.x + building.w - 6; wx += 18) {
+            for (let wy = top + 12; wy < 355; wy += 21) {
+              if ((wx + wy) % 3 !== 0) ctx.fillRect(wx, wy, 5, 8);
+            }
+          }
+          ctx.fillStyle = "#9cecff";
+          ctx.fillRect(building.x + building.w / 2 - 2, top - 8, 4, 8);
+        }
+        ctx.fillStyle = "#233943";
+        ctx.fillRect(0, 365, canvas.width, 16);
+        rainOffset = (rainOffset + 220 * delta) % 42;
+        ctx.strokeStyle = "#c8e8ff55";
+        ctx.lineWidth = 1;
+        for (let x = -30; x < canvas.width + 30; x += 34) {
+          for (let y = -24; y < 430; y += 42) {
+            const dropY = (y + rainOffset) % 430;
+            ctx.beginPath();
+            ctx.moveTo(x, dropY);
+            ctx.lineTo(x - 9, dropY + 18);
+            ctx.stroke();
+          }
+        }
+      } else {
+        ctx.fillStyle = "#91c886";
+        ctx.beginPath();
+        ctx.moveTo(0, 390);
+        ctx.quadraticCurveTo(180, 325, 360, 390);
+        ctx.quadraticCurveTo(560, 330, 760, 386);
+        ctx.quadraticCurveTo(860, 350, 960, 380);
+        ctx.lineTo(960, 430);
+        ctx.lineTo(0, 430);
+        ctx.closePath();
+        ctx.fill();
+        ctx.fillStyle = "#79b86e";
+        ctx.beginPath();
+        ctx.moveTo(0, 412);
+        ctx.quadraticCurveTo(245, 355, 470, 415);
+        ctx.quadraticCurveTo(710, 365, 960, 406);
+        ctx.lineTo(960, 445);
+        ctx.lineTo(0, 445);
+        ctx.closePath();
+        ctx.fill();
+        for (const tree of [{ x: 76, y: 380 }, { x: 260, y: 370 }, { x: 690, y: 382 }, { x: 900, y: 371 }]) {
+          ctx.fillStyle = "#73553b";
+          ctx.fillRect(tree.x - 4, tree.y - 5, 8, 36);
+          const leaves = ctx.createRadialGradient(tree.x - 7, tree.y - 22, 3, tree.x, tree.y - 18, 30);
+          leaves.addColorStop(0, "#77c66e");
+          leaves.addColorStop(1, "#32854e");
+          ctx.fillStyle = leaves;
+          ctx.beginPath();
+          ctx.arc(tree.x, tree.y - 21, 24, 0, Math.PI * 2);
+          ctx.arc(tree.x - 15, tree.y - 10, 15, 0, Math.PI * 2);
+          ctx.arc(tree.x + 15, tree.y - 9, 15, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+    }
+
+    function drawAirship() {
+      const y = Math.min(165, -70 + cutsceneTimer * 75);
+      ctx.save();
+      ctx.translate(490, y);
+      ctx.fillStyle = "#bb8b55";
+      ctx.beginPath();
+      ctx.ellipse(0, 0, 105, 34, -0.08, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "#e9d8a5";
+      ctx.beginPath();
+      ctx.ellipse(-10, -5, 76, 24, -0.08, Math.PI, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = "#604d3b";
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(-35, 29); ctx.lineTo(-24, 55);
+      ctx.moveTo(36, 27); ctx.lineTo(24, 55);
+      ctx.stroke();
+      ctx.fillStyle = "#754c31";
+      ctx.fillRect(-28, 54, 54, 22);
+      ctx.fillStyle = "#f6d873";
+      ctx.fillRect(-18, 59, 9, 9);
+      ctx.fillRect(2, 59, 9, 9);
+      ctx.fillStyle = "#243b52";
+      ctx.font = "bold 11px system-ui";
+      ctx.textAlign = "center";
+      ctx.fillText("HEAVENS", 0, 19);
+      ctx.strokeStyle = "#604d3b";
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(-101, -5); ctx.lineTo(-128, -15); ctx.lineTo(-111, 8);
+      ctx.moveTo(99, -4); ctx.lineTo(126, -12); ctx.lineTo(111, 10);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    function drawLightningStrike(x, y, alpha = 1) {
+      ctx.save();
+      ctx.globalAlpha = alpha;
+      ctx.strokeStyle = "#fff27a";
+      ctx.lineWidth = 5;
+      ctx.shadowColor = "#62dfff";
+      ctx.shadowBlur = 14;
+      ctx.beginPath();
+      ctx.moveTo(x + 5, y - 100);
+      ctx.lineTo(x - 8, y - 62);
+      ctx.lineTo(x + 9, y - 52);
+      ctx.lineTo(x - 6, y - 24);
+      ctx.lineTo(x + 8, y - 18);
+      ctx.lineTo(x, y + 3);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    function drawScythe(scale = 1, rotation = 0) {
+      ctx.save();
+      ctx.rotate(rotation);
+      ctx.scale(scale, scale);
+      const handle = ctx.createLinearGradient(-7, 0, 7, -100);
+      handle.addColorStop(0, "#292d32");
+      handle.addColorStop(0.45, "#737b83");
+      handle.addColorStop(1, "#343a40");
+      ctx.strokeStyle = handle;
+      ctx.lineWidth = 9;
+      ctx.lineCap = "round";
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.quadraticCurveTo(-5, -46, 0, -96);
+      ctx.stroke();
+      ctx.strokeStyle = "#b1bac1";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(3, -18);
+      ctx.lineTo(1, -32);
+      ctx.moveTo(2, -69);
+      ctx.lineTo(1, -82);
+      ctx.stroke();
+
+      const steel = ctx.createLinearGradient(4, -93, 110, -155);
+      steel.addColorStop(0, "#737d86");
+      steel.addColorStop(0.22, "#e1e7eb");
+      steel.addColorStop(0.55, "#aeb8c0");
+      steel.addColorStop(0.82, "#f7f9fa");
+      steel.addColorStop(1, "#78838c");
+      ctx.fillStyle = steel;
+      ctx.beginPath();
+      ctx.moveTo(0, -91);
+      ctx.bezierCurveTo(24, -98, 36, -125, 57, -146);
+      ctx.bezierCurveTo(74, -163, 98, -165, 116, -155);
+      ctx.bezierCurveTo(94, -157, 83, -143, 75, -126);
+      ctx.bezierCurveTo(60, -97, 40, -80, 0, -91);
+      ctx.closePath();
+      ctx.fill();
+      ctx.strokeStyle = "#f8fbfd";
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(7, -94);
+      ctx.bezierCurveTo(29, -105, 41, -130, 62, -149);
+      ctx.bezierCurveTo(78, -162, 98, -163, 116, -155);
+      ctx.stroke();
+      ctx.strokeStyle = "#626c75";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(13, -91);
+      ctx.bezierCurveTo(38, -88, 55, -105, 72, -132);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    function drawHeldWeapon(x, y) {
+      ctx.save();
+      ctx.translate(x + (player.facingX >= 0 ? 10 : -10), y + 3);
+      ctx.scale(player.facingX >= 0 ? 1 : -1, 1);
+      ctx.lineCap = "round";
+      if (weapon.type === "whip") {
+        ctx.strokeStyle = "#815534";
+        ctx.lineWidth = 5;
+        ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(13, 3); ctx.stroke();
+        ctx.strokeStyle = "#d5a755";
+        ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(11, 3); ctx.lineTo(18, 8); ctx.stroke();
+      } else if (weapon.type === "bow") {
+        ctx.strokeStyle = "#815534";
+        ctx.lineWidth = 4;
+        ctx.beginPath(); ctx.arc(5, 0, 16, -1.1, 1.1); ctx.stroke();
+        ctx.strokeStyle = "#f3e7c2";
+        ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(12, -14); ctx.lineTo(12, 14); ctx.stroke();
+      } else if (weapon.type === "sword" || weapon.type === "heroSword") {
+        ctx.strokeStyle = "#73503b";
+        ctx.lineWidth = 5;
+        ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(9, -3); ctx.stroke();
+        ctx.strokeStyle = weapon.type === "heroSword" ? "#a987f0" : "#cfe5ef";
+        ctx.lineWidth = 4;
+        ctx.beginPath(); ctx.moveTo(8, -3); ctx.lineTo(25, -13); ctx.stroke();
+        ctx.strokeStyle = "#fff";
+        ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(12, -5); ctx.lineTo(24, -12); ctx.stroke();
+      } else if (weapon.type === "scythe") {
+        ctx.translate(9, 6);
+        drawScythe(0.28, 0.55);
+      } else if (weapon.type === "axe") {
+        ctx.strokeStyle = "#79573a";
+        ctx.lineWidth = 5;
+        ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(23, -13); ctx.stroke();
+        ctx.fillStyle = "#b8d7e8";
+        ctx.beginPath(); ctx.moveTo(22, -13); ctx.lineTo(14, -23); ctx.lineTo(13, -9); ctx.closePath(); ctx.fill();
+        ctx.beginPath(); ctx.moveTo(22, -13); ctx.lineTo(31, -22); ctx.lineTo(29, -7); ctx.closePath(); ctx.fill();
+      } else if (weapon.type === "lightningSpear") {
+        ctx.strokeStyle = "#6ce7ff";
+        ctx.lineWidth = 4;
+        ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(30, -15); ctx.stroke();
+        ctx.fillStyle = "#f4e976";
+        ctx.beginPath(); ctx.moveTo(34, -17); ctx.lineTo(25, -18); ctx.lineTo(31, -10); ctx.closePath(); ctx.fill();
+      }
+      ctx.restore();
+    }
+
+    function drawWeaponSwing(isUltimate, progress) {
+      const direction = player.facingX >= 0 ? 1 : -1;
+      const side = player.facingY < -0.25 ? -1 : 1;
+      const reach = isUltimate ? 300 : weapon.range;
+      const color = isUltimate ? player.ultimateColor : "#eaf7ff";
+      ctx.save();
+      ctx.translate(player.x, player.y - 7);
+      ctx.scale(direction, 1);
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+      ctx.shadowColor = color;
+      ctx.shadowBlur = isUltimate ? 28 : 15;
+
+      if (weapon.type === "whip") {
+        const flick = Math.sin(progress * Math.PI);
+        for (const [width, stroke] of [[11, "#5a3925"], [7, "#b77a38"], [2, "#f7d58a"]]) {
+          ctx.strokeStyle = stroke;
+          ctx.lineWidth = width;
+          ctx.beginPath();
+          ctx.moveTo(12, 4);
+          ctx.bezierCurveTo(45, -25 - flick * 28, reach * 0.62, 18 - flick * 54, reach, -8 + flick * 13);
+          ctx.stroke();
+        }
+        ctx.fillStyle = "#fff6cb";
+        ctx.beginPath();
+        ctx.arc(reach, -8 + flick * 13, 5, 0, Math.PI * 2);
+        ctx.fill();
+      } else if (weapon.type === "sword" || weapon.type === "heroSword") {
+        const angle = -0.95 + progress * 1.9 * side;
+        ctx.rotate(angle);
+        const bladeLength = isUltimate ? 190 : weapon.type === "heroSword" ? 92 : 72;
+        ctx.save();
+        ctx.rotate(-0.2);
+        ctx.strokeStyle = "#563a2d";
+        ctx.lineWidth = 9;
+        ctx.beginPath();
+        ctx.moveTo(12, 0);
+        ctx.lineTo(27, 0);
+        ctx.stroke();
+        ctx.strokeStyle = "#c99b59";
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.moveTo(13, 0);
+        ctx.lineTo(24, 0);
+        ctx.stroke();
+        ctx.strokeStyle = "#8b633d";
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.moveTo(25, -12);
+        ctx.lineTo(25, 12);
+        ctx.stroke();
+        const blade = ctx.createLinearGradient(25, -9, bladeLength, 8);
+        blade.addColorStop(0, isUltimate ? color : weapon.type === "heroSword" ? "#bca2f5" : "#8fa9bb");
+        blade.addColorStop(0.35, "#fff");
+        blade.addColorStop(0.7, isUltimate ? color : "#d9e8ef");
+        blade.addColorStop(1, "#7c93a2");
+        ctx.fillStyle = blade;
+        ctx.beginPath();
+        ctx.moveTo(25, -8);
+        ctx.lineTo(bladeLength - 8, -5);
+        ctx.lineTo(bladeLength, 0);
+        ctx.lineTo(bladeLength - 8, 5);
+        ctx.lineTo(25, 8);
+        ctx.closePath();
+        ctx.fill();
+        ctx.strokeStyle = "#fff";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(29, -5);
+        ctx.lineTo(bladeLength - 8, -4);
+        ctx.stroke();
+        ctx.restore();
+        ctx.save();
+        if (isUltimate) {
+          ctx.globalAlpha *= 0.95;
+          ctx.strokeStyle = "#fff0a3";
+          ctx.lineWidth = 22;
+          ctx.beginPath();
+          ctx.moveTo(28, 12);
+          ctx.bezierCurveTo(100, -78, 195, -52, isUltimate ? 440 : 265, -8);
+          ctx.stroke();
+          ctx.strokeStyle = "#fff";
+          ctx.lineWidth = 3;
+          ctx.stroke();
+        } else if (weapon.type === "heroSword") {
+          ctx.globalAlpha *= 0.85;
+          ctx.shadowColor = "#6feaff";
+          ctx.shadowBlur = 22;
+          ctx.fillStyle = "#c8f8ff";
+          ctx.beginPath();
+          ctx.ellipse(bladeLength + 7, -2, 11, 4, -0.2, 0, Math.PI * 2);
+          ctx.fill();
+        } else {
+          ctx.globalAlpha *= 0.45;
+          ctx.strokeStyle = "#d9f5ff";
+          ctx.lineWidth = 4;
+          ctx.beginPath();
+          ctx.arc(18, 0, 67, -0.95, 0.18);
+          ctx.stroke();
+        }
+        ctx.restore();
+      } else if (weapon.type === "scythe") {
+        const sweep = progress * (isUltimate ? Math.PI * 2.4 : 2);
+        const direction = player.facingY < -0.25 ? -1 : 1;
+        drawScythe(isUltimate ? 1.15 : 0.85, -1.1 + sweep * direction);
+        if (isUltimate) {
+          ctx.globalAlpha *= 0.42;
+          ctx.strokeStyle = "#d5dde3";
+          ctx.lineWidth = 7;
+          ctx.beginPath();
+          ctx.arc(0, 0, 112, -0.4 + sweep, 0.55 + sweep);
+          ctx.stroke();
+        }
+      } else if (weapon.type === "axe") {
+        const spin = -0.85 + progress * (isUltimate ? Math.PI * 3.2 : 1.45);
+        ctx.translate(24 + (isUltimate ? progress * 340 : progress * 90), -8 - Math.sin(progress * Math.PI) * 55);
+        ctx.rotate(spin);
+        ctx.strokeStyle = "#65432f";
+        ctx.lineWidth = 17;
+        ctx.beginPath();
+        ctx.moveTo(-32, 0);
+        ctx.lineTo(38, 0);
+        ctx.stroke();
+        const steel = ctx.createLinearGradient(22, -52, 72, 50);
+        steel.addColorStop(0, "#fff");
+        steel.addColorStop(0.35, "#c8e8f6");
+        steel.addColorStop(1, "#708da3");
+        ctx.fillStyle = steel;
+        ctx.beginPath();
+        ctx.moveTo(22, 0);
+        ctx.quadraticCurveTo(46, -63, 82, -48);
+        ctx.quadraticCurveTo(70, 0, 82, 48);
+        ctx.quadraticCurveTo(46, 63, 22, 0);
+        ctx.closePath();
+        ctx.fill();
+        ctx.strokeStyle = "#fff";
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.moveTo(39, 0);
+        ctx.quadraticCurveTo(58, -43, 76, -41);
+        ctx.stroke();
+        if (isUltimate) {
+          ctx.globalAlpha *= 0.45;
+          ctx.strokeStyle = "#ffe49a";
+          ctx.lineWidth = 24;
+          ctx.beginPath();
+          ctx.moveTo(-160, 0);
+          ctx.lineTo(-30, 0);
+          ctx.stroke();
+        }
+      } else if (weapon.type === "lightningSpear") {
+        const thrust = Math.sin(progress * Math.PI);
+        ctx.translate(18 + thrust * (isUltimate ? 270 : 72), -thrust * 20);
+        ctx.rotate(-0.12 * side);
+        ctx.strokeStyle = "#523c7c";
+        ctx.lineWidth = 20;
+        ctx.beginPath();
+        ctx.moveTo(-100, 8);
+        ctx.lineTo(10, -6);
+        ctx.stroke();
+        ctx.strokeStyle = "#7deaff";
+        ctx.lineWidth = 10;
+        ctx.beginPath();
+        ctx.moveTo(-100, 4);
+        ctx.lineTo(10, -6);
+        ctx.stroke();
+        ctx.fillStyle = "#fff2a1";
+        ctx.beginPath();
+        ctx.moveTo(30, -10); ctx.lineTo(2, -18); ctx.lineTo(12, -6);
+        ctx.lineTo(1, 5); ctx.closePath();
+        ctx.fill();
+        if (isUltimate) {
+          ctx.globalAlpha *= 0.85;
+          for (let bolt = 0; bolt < 5; bolt++) {
+            const bx = -190 + bolt * 96;
+            ctx.strokeStyle = bolt % 2 ? "#79eaff" : "#fff3a1";
+            ctx.lineWidth = 6;
+            ctx.beginPath();
+            ctx.moveTo(bx + 10, -145);
+            ctx.lineTo(bx - 3, -95);
+            ctx.lineTo(bx + 11, -74);
+            ctx.lineTo(bx - 12, -24);
+            ctx.lineTo(bx, 18);
+            ctx.stroke();
+          }
+        }
+      } else if (weapon.type === "bow") {
+        ctx.rotate(-0.1 * side);
+        ctx.strokeStyle = "#7a4929";
+        ctx.lineWidth = isUltimate ? 9 : 6;
+        ctx.beginPath();
+        ctx.arc(22, 0, 34, -1.18, 1.18);
+        ctx.stroke();
+        ctx.strokeStyle = "#fff4d2";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(34, -30); ctx.lineTo(34, 30);
+        ctx.stroke();
+        ctx.fillStyle = "#d7efff";
+        ctx.beginPath();
+        ctx.moveTo(110, 0); ctx.lineTo(36, -4); ctx.lineTo(36, 4); ctx.closePath();
+        ctx.fill();
+      }
+      ctx.restore();
+    }
+
+    function drawCinematicOverlay() {
+      if (player.ultimateAnimation <= 0) return;
+      const progress = 1 - player.ultimateAnimation / 1.5;
+      const fade = Math.min(1, progress * 5, (1 - progress) * 3 + 0.25);
+      const barHeight = 16 + Math.sin(progress * Math.PI) * 28;
+      const vignette = ctx.createRadialGradient(480, 270, 75, 480, 270, 520);
+      vignette.addColorStop(0, "rgba(8, 10, 25, 0)");
+      vignette.addColorStop(1, `rgba(8, 10, 25, ${0.72 * fade})`);
+      ctx.fillStyle = vignette;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = `rgba(5, 9, 20, ${0.9 * fade})`;
+      ctx.fillRect(0, 0, canvas.width, barHeight);
+      ctx.fillRect(0, canvas.height - barHeight, canvas.width, barHeight);
+      if (progress < 0.18) {
+        ctx.fillStyle = `rgba(255,255,255,${(0.18 - progress) * 0.85})`;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+      }
+      ctx.save();
+      ctx.globalAlpha = fade;
+      ctx.textAlign = "center";
+      ctx.font = "900 29px system-ui";
+      ctx.lineWidth = 5;
+      ctx.strokeStyle = "#101425";
+      ctx.shadowColor = player.ultimateColor;
+      ctx.shadowBlur = 20;
+      ctx.strokeText(player.ultimateName, canvas.width / 2, 58);
+      ctx.fillStyle = "#fff";
+      ctx.fillText(player.ultimateName, canvas.width / 2, 58);
+      ctx.restore();
+    }
+
+    function drawImpactEffects() {
+      for (const impact of impactEffects) {
+        const progress = 1 - impact.life / 0.36;
+        const radius = 8 + progress * 28;
+        ctx.save();
+        ctx.globalAlpha = 1 - progress;
+        ctx.strokeStyle = impact.color;
+        ctx.lineWidth = 4 * (1 - progress) + 1;
+        ctx.shadowColor = impact.color;
+        ctx.shadowBlur = 16;
+        ctx.beginPath();
+        ctx.arc(impact.x, impact.y, radius, 0, Math.PI * 2);
+        ctx.stroke();
+        for (let i = 0; i < 6; i++) {
+          const angle = i * Math.PI / 3 + progress;
+          ctx.beginPath();
+          ctx.moveTo(impact.x + Math.cos(angle) * radius * 0.5, impact.y + Math.sin(angle) * radius * 0.5);
+          ctx.lineTo(impact.x + Math.cos(angle) * (radius + 12), impact.y + Math.sin(angle) * (radius + 12));
+          ctx.stroke();
+        }
+        ctx.restore();
+      }
+    }
+
+    function updateHealthDrop(delta) {
+      healthDropTimer -= delta;
+      if (healthDropTimer <= 0) {
+        healthDropTimer += 10;
+        healthDrop = {
+          x: 55 + Math.random() * (canvas.width - 110),
+          y: -24,
+          targetY: 400 + Math.random() * 105,
+          pulse: Math.random() * Math.PI * 2
+        };
+      }
+      if (!healthDrop) return;
+      healthDrop.pulse += delta * 4;
+      healthDrop.y = Math.min(healthDrop.targetY, healthDrop.y + 190 * delta);
+      if (Math.hypot(player.x - healthDrop.x, player.y - healthDrop.y) < 34) {
+        const previousHealth = player.health;
+        player.health = Math.min(player.maxHealth, player.health + 10);
+        healthDrop = null;
+        if (player.health > previousHealth) {
+          impactEffects.push({ x: player.x, y: player.y - 22, life: 0.36, color: "#7cff91" });
+        }
+        if (hasSavedGame) saveProgress(savedGame.checkpoint, wave);
+        updateHud();
+      }
+    }
+
+    function drawHealthDrop() {
+      if (!healthDrop) return;
+      const pulse = 1 + Math.sin(healthDrop.pulse) * 0.1;
+      ctx.save();
+      ctx.translate(healthDrop.x, healthDrop.y);
+      ctx.scale(pulse, pulse);
+      ctx.shadowColor = "#8dff9e";
+      ctx.shadowBlur = 20;
+      ctx.fillStyle = "#64d982";
+      ctx.beginPath();
+      ctx.arc(0, 0, 18, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.shadowBlur = 0;
+      ctx.fillStyle = "#fff";
+      ctx.beginPath();
+      ctx.moveTo(0, 11);
+      ctx.bezierCurveTo(-4, 7, -13, 1, -12, -5);
+      ctx.bezierCurveTo(-11, -12, -3, -12, 0, -6);
+      ctx.bezierCurveTo(4, -12, 12, -12, 12, -5);
+      ctx.bezierCurveTo(13, 1, 4, 7, 0, 11);
+      ctx.fill();
+      ctx.restore();
+    }
+
+    function drawPlayer() {
+      const { x, y, name } = player;
+      ctx.save();
+      if (player.attackAnimation > 0 || player.ultimateAnimation > 0) {
+        const isUltimate = player.ultimateAnimation > 0;
+        const duration = isUltimate ? 1.5 : 0.36;
+        const remaining = isUltimate ? player.ultimateAnimation : player.attackAnimation;
+        const progress = Math.max(0, Math.min(1, 1 - remaining / duration));
+        ctx.globalAlpha = isUltimate ? 1 : Math.sin(progress * Math.PI) * 0.92;
+        drawWeaponSwing(isUltimate, progress);
+      }
+      ctx.globalAlpha = 1;
+      ctx.shadowBlur = 0;
+      ctx.textAlign = "center";
+      ctx.font = "bold 18px system-ui";
+      ctx.lineWidth = 4;
+      ctx.strokeStyle = "#fff";
+      ctx.strokeText(name, x, y - 45);
+      ctx.fillStyle = "#18364b";
+      ctx.fillText(name, x, y - 45);
+      ctx.fillStyle = "#14334a35";
+      ctx.beginPath();
+      ctx.ellipse(x, y + 22, 19, 6, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.lineCap = "round";
+      ctx.strokeStyle = "#263b55";
+      ctx.lineWidth = 8;
+      ctx.beginPath();
+      ctx.moveTo(x - 5, y + 12); ctx.lineTo(x - 9, y + 25);
+      ctx.moveTo(x + 5, y + 12); ctx.lineTo(x + 9, y + 25);
+      ctx.stroke();
+      ctx.strokeStyle = "#392b2c";
+      ctx.lineWidth = 5;
+      ctx.beginPath();
+      ctx.moveTo(x - 9, y + 25); ctx.lineTo(x - 14, y + 26);
+      ctx.moveTo(x + 9, y + 25); ctx.lineTo(x + 14, y + 26);
+      ctx.stroke();
+      const skin = ctx.createLinearGradient(x - 10, y - 27, x + 10, y - 5);
+      skin.addColorStop(0, "#ffd18a");
+      skin.addColorStop(1, "#ce8144");
+      ctx.fillStyle = skin;
+      ctx.beginPath(); ctx.arc(x, y - 15, 11, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "#3e2e2a";
+      ctx.beginPath();
+      ctx.ellipse(x, y - 24, 10, 5, 0, Math.PI, Math.PI * 2);
+      ctx.fill();
+      const eyeX = x + (player.facingX >= 0 ? 4 : -4);
+      ctx.fillStyle = "#fff";
+      ctx.beginPath(); ctx.arc(eyeX, y - 17, 2.4, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "#243b52";
+      ctx.beginPath(); ctx.arc(eyeX + (player.facingX >= 0 ? 1 : -1), y - 17, 1.1, 0, Math.PI * 2); ctx.fill();
+      const shirt = ctx.createLinearGradient(x - 12, y - 5, x + 12, y + 20);
+      shirt.addColorStop(0, "#55b3ee");
+      shirt.addColorStop(1, "#1c6098");
+      ctx.fillStyle = shirt;
+      ctx.beginPath();
+      ctx.roundRect(x - 12, y - 5, 24, 25, 5);
+      ctx.fill();
+      ctx.fillStyle = "#f4d18c";
+      ctx.fillRect(x - 11, y + 13, 22, 4);
+      ctx.strokeStyle = "#f5d69c";
+      ctx.lineWidth = 5;
+      ctx.beginPath();
+      ctx.moveTo(x - 10, y); ctx.lineTo(x - 18, y + 11);
+      ctx.moveTo(x + 10, y); ctx.lineTo(x + 18, y + 9);
+      ctx.stroke();
+      const hat = ctx.createLinearGradient(x - 11, y - 39, x + 11, y - 27);
+      hat.addColorStop(0, "#f5d272");
+      hat.addColorStop(1, "#b88634");
+      ctx.fillStyle = hat;
+      ctx.beginPath();
+      ctx.ellipse(x, y - 28, 15, 4, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillRect(x - 7, y - 40, 14, 12);
+      drawHeldWeapon(x, y);
+      ctx.restore();
+    }
+
+    function drawEnemy(enemy) {
+      const isBunnyBoss = enemy.type === "boss";
+      const isLightningBoss = enemy.type === "lightningBoss";
+      const isBoss = isBunnyBoss || isLightningBoss;
+      const isLightningEnemy = ["fighter", "guard", "lightningBoss"].includes(enemy.type);
+      const scale = isBoss ? 2 : enemy.type === "guard" ? 1.35 : enemy.type === "big" ? 1.45 : 1;
+      const sink = enemy.dying ? Math.max(0, Math.min(1, (enemy.deathTimer - 1) / 2.8)) : 0;
+      if (enemy.dying) {
+        const pit = ctx.createRadialGradient(enemy.x, enemy.y + 16, 2, enemy.x, enemy.y + 16, 44);
+        pit.addColorStop(0, "#201b20");
+        pit.addColorStop(0.65, "#342631");
+        pit.addColorStop(1, "#89613d");
+        ctx.fillStyle = pit;
+        ctx.shadowColor = "#1e211c88";
+        ctx.shadowBlur = 12;
+        ctx.beginPath();
+        ctx.ellipse(enemy.x, enemy.y + 16, 20 + sink * 24, 5 + sink * 7, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+        if (enemy.deathTimer > 0.7 && enemy.deathTimer < 3.8) {
+          ctx.fillStyle = "#c89552";
+          for (let i = 0; i < 4; i++) {
+            const angle = enemy.deathTimer * 5 + i * Math.PI / 2;
+            const radius = 23 + Math.sin(enemy.deathTimer * 8 + i) * 5;
+            ctx.beginPath();
+            ctx.arc(enemy.x + Math.cos(angle) * radius, enemy.y + 12 + Math.sin(angle) * 6, 3, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        }
+      }
+      ctx.fillStyle = "#13253a35";
+      ctx.beginPath();
+      ctx.ellipse(enemy.x, enemy.y + 16, 23 * scale, 6 * scale, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.save();
+      ctx.globalAlpha = enemy.dying ? Math.max(0, 1 - sink) : 1;
+      const shake = enemy.dying && enemy.deathTimer < 1
+        ? Math.sin(enemy.deathTimer * 34) * 3
+        : 0;
+      ctx.translate(enemy.x + shake, enemy.y + sink * 30);
+      ctx.scale(scale, scale);
+      if (isLightningEnemy) {
+        const armor = ctx.createLinearGradient(-18, -30, 18, 18);
+        if (enemy.type === "lightningBoss") {
+          armor.addColorStop(0, "#a18df2");
+          armor.addColorStop(1, "#35266e");
+        } else if (enemy.type === "guard") {
+          armor.addColorStop(0, "#b0d1df");
+          armor.addColorStop(1, "#40566f");
+        } else {
+          armor.addColorStop(0, "#a6efff");
+          armor.addColorStop(1, "#347bb4");
+        }
+        ctx.fillStyle = armor;
+        ctx.shadowColor = "#63dfff";
+        ctx.shadowBlur = isBoss ? 22 : 12;
+        ctx.beginPath();
+        ctx.ellipse(0, 0, 17, 18, 0, 0, Math.PI * 2);
+        ctx.arc(0, -20, 12, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = "#f4e976";
+        ctx.beginPath();
+        ctx.moveTo(-2, -11); ctx.lineTo(5, -2); ctx.lineTo(0, -2);
+        ctx.lineTo(4, 8); ctx.lineTo(-7, -4); ctx.lineTo(-2, -4); ctx.closePath();
+        ctx.fill();
+        ctx.fillStyle = "#fff";
+        ctx.fillRect(-5, -24, 3, 3);
+        ctx.fillRect(3, -24, 3, 3);
+        if (enemy.type === "guard") {
+          ctx.strokeStyle = "#79eaff";
+          ctx.lineWidth = 3;
+          ctx.beginPath();
+          ctx.moveTo(20, 12); ctx.lineTo(22, -35);
+          ctx.lineTo(29, -23); ctx.lineTo(22, -16);
+          ctx.stroke();
+        }
+      } else {
+        const fur = ctx.createLinearGradient(-18, -35, 18, 12);
+        fur.addColorStop(0, isBunnyBoss ? "#f0d7f4" : "#ffffff");
+        fur.addColorStop(1, isBunnyBoss ? "#9563a8" : "#c7c7c4");
+        ctx.fillStyle = fur;
+        ctx.shadowColor = isBunnyBoss ? "#d99cf4" : "#ffffff";
+        ctx.shadowBlur = isBunnyBoss ? 18 : 6;
+        ctx.beginPath();
+        ctx.ellipse(0, 0, 18, 12, 0, 0, Math.PI * 2);
+        ctx.ellipse(12, -8, 10, 9, 0, 0, Math.PI * 2);
+        ctx.ellipse(8, -25, 4, 13, -0.2, 0, Math.PI * 2);
+        ctx.ellipse(17, -25, 4, 13, 0.2, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = "#ed9eaf";
+        ctx.beginPath();
+        ctx.ellipse(8, -25, 1.8, 8, -0.2, 0, Math.PI * 2);
+        ctx.ellipse(17, -25, 1.8, 8, 0.2, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = "#d94c55";
+        ctx.beginPath();
+        ctx.arc(16, -10, 2.5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = "#332b30";
+        ctx.beginPath();
+        ctx.arc(21, -12, 1.4, 0, Math.PI * 2);
+        ctx.fill();
+        if (isBunnyBoss) {
+          ctx.fillStyle = "#161821";
+          ctx.fillRect(5, -16, 20, 7);
+          ctx.fillStyle = "#444";
+          ctx.fillRect(13, -15, 6, 5);
+        }
+      }
+      ctx.fillStyle = "#493925";
+      ctx.fillRect(-10, 8, 7, 5);
+      ctx.fillRect(7, 8, 7, 5);
+      ctx.restore();
+      const barWidth = isBoss ? 100 : enemy.type === "guard" ? 52 : enemy.type === "big" ? 48 : 40;
+      const barY = enemy.y - (isBoss ? 78 : enemy.type === "guard" ? 48 : enemy.type === "big" ? 55 : 42);
+      if (!enemy.dying) {
+        ctx.fillStyle = "#5b343a";
+        ctx.fillRect(enemy.x - barWidth / 2, barY, barWidth, 5);
+        ctx.fillStyle = isLightningEnemy ? "#55d9f3" : "#d84950";
+        ctx.fillRect(enemy.x - barWidth / 2, barY, barWidth * Math.max(0, enemy.health / enemy.maxHealth), 5);
+      }
+      if (isBoss) {
+        const label = isLightningBoss ? "Lightning Boss" : "Bunny Boss";
+        ctx.textAlign = "center";
+        ctx.font = "bold 16px system-ui";
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = "white";
+        ctx.strokeText(label, enemy.x, barY - 8);
+        ctx.fillStyle = isLightningBoss ? "#28285c" : "#462e52";
+        ctx.fillText(label, enemy.x, barY - 8);
+      } else if (isLightningEnemy) {
+        const label = enemy.type === "guard" ? "Lightning Guard" : "Lightning Fighter";
+        ctx.textAlign = "center";
+        ctx.font = "bold 12px system-ui";
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = "white";
+        ctx.strokeText(label, enemy.x, barY - 5);
+        ctx.fillStyle = "#253654";
+        ctx.fillText(label, enemy.x, barY - 5);
+      }
+    }
+
+    function draw(delta) {
+      const stormy = sceneTheme === "storm";
+      const sky = ctx.createLinearGradient(0, 0, 0, 540);
+      sky.addColorStop(0, stormy ? "#202b4a" : "#68c5f3");
+      sky.addColorStop(0.65, stormy ? "#65718c" : "#b8e9ff");
+      sky.addColorStop(0.651, stormy ? "#53646b" : "#82cf63");
+      sky.addColorStop(1, stormy ? "#334e42" : "#55a942");
+      ctx.fillStyle = sky;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      if (stormy && stormFlashTimer > 0) {
+        ctx.fillStyle = `rgba(226, 238, 255, ${stormFlashTimer * 0.6})`;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        drawLightningStrike(ambientBoltX, 205, Math.min(1, stormFlashTimer * 4));
+      } else if (!stormy) {
+        const glow = ctx.createRadialGradient(820, 95, 12, 820, 95, 95);
+        glow.addColorStop(0, "#fff8cfbb");
+        glow.addColorStop(1, "#fff4a000");
+        ctx.fillStyle = glow;
+        ctx.beginPath(); ctx.arc(820, 95, 95, 0, Math.PI * 2); ctx.fill();
+        const sun = ctx.createRadialGradient(808, 80, 5, 820, 95, 42);
+        sun.addColorStop(0, "#fff7c0");
+        sun.addColorStop(1, "#f5b954");
+        ctx.fillStyle = sun;
+        ctx.beginPath(); ctx.arc(820, 95, 42, 0, Math.PI * 2); ctx.fill();
+      }
+      for (const cloud of clouds) {
+        if (isPlaying) {
+          cloud.x += cloud.speed * delta;
+          if (cloud.x > canvas.width + 70) cloud.x = -70;
+        }
+        drawCloud(cloud.x, cloud.y, cloud.size, stormy ? "#59647b" : "#fff");
+      }
+      drawBackdrop(stormy, delta);
+      ctx.fillStyle = stormy ? "#405a48" : "#6dbd50";
+      for (let x = 20; x < canvas.width; x += 38) {
+        const y = 425 + (x * 17 % 75);
+        ctx.beginPath();
+        ctx.ellipse(x, y, 2, 6, -0.3, 0, Math.PI * 2);
+        ctx.ellipse(x + 5, y + 1, 2, 5, 0.3, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      if (!airshipPopup.hidden) drawAirship();
+      if (isPlaying || gameEnded || wavePopup.hidden === false || bossDeathActive) {
+        for (const enemy of enemies) drawEnemy(enemy);
+        drawPlayer();
+      }
+      for (const projectile of projectiles) {
+        ctx.save();
+        ctx.translate(projectile.x, projectile.y);
+        ctx.rotate(Math.atan2(projectile.vy, projectile.vx));
+        if (projectile.type === "heroSlash") {
+          ctx.rotate(Math.sin(projectile.phase) * 0.08);
+          ctx.globalAlpha = Math.min(1, projectile.life * 2);
+          ctx.shadowColor = "#62eaff";
+          ctx.shadowBlur = 24;
+          ctx.strokeStyle = "#91f3ff";
+          ctx.lineWidth = 5;
+          ctx.beginPath();
+          ctx.moveTo(-62, 9);
+          ctx.bezierCurveTo(-38, -20, -14, -25, 4, -15);
+          ctx.stroke();
+          const slashGradient = ctx.createLinearGradient(-34, 20, 42, -18);
+          slashGradient.addColorStop(0, "#75dfff");
+          slashGradient.addColorStop(0.48, "#ffffff");
+          slashGradient.addColorStop(1, "#a792ff");
+          ctx.fillStyle = slashGradient;
+          ctx.beginPath();
+          ctx.moveTo(-35, 14);
+          ctx.quadraticCurveTo(-8, -31, 42, -12);
+          ctx.quadraticCurveTo(22, -9, 10, 11);
+          ctx.quadraticCurveTo(-7, 32, -35, 14);
+          ctx.closePath();
+          ctx.fill();
+          ctx.shadowColor = "#fff";
+          ctx.shadowBlur = 10;
+          ctx.strokeStyle = "#fff";
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.moveTo(-26, 13);
+          ctx.quadraticCurveTo(-3, -15, 34, -12);
+          ctx.stroke();
+          ctx.restore();
+          continue;
+        }
+        ctx.fillStyle = projectile.type === "arrow" ? "#68452d" :
+          projectile.type === "lightning" ? "#66ecff" : "#ee8d32";
+        if (projectile.type === "lightning") {
+          ctx.strokeStyle = "#fff27a";
+          ctx.lineWidth = 5;
+          ctx.shadowColor = "#62dfff";
+          ctx.shadowBlur = 12;
+          ctx.beginPath();
+          ctx.moveTo(-12, -8); ctx.lineTo(-2, 0); ctx.lineTo(-10, 9);
+          ctx.lineTo(9, -2); ctx.lineTo(2, 7); ctx.lineTo(13, 0);
+          ctx.stroke();
+        } else if (projectile.type === "arrow") {
+          ctx.fillRect(-12, -2, 24, 4);
+          ctx.beginPath(); ctx.moveTo(12, 0); ctx.lineTo(5, -5); ctx.lineTo(5, 5); ctx.fill();
+        } else {
+          ctx.beginPath();
+          ctx.moveTo(-9, 0); ctx.lineTo(8, -5); ctx.lineTo(3, 6); ctx.closePath(); ctx.fill();
+          ctx.fillStyle = "#4b9b45"; ctx.fillRect(-10, -3, 6, 2);
+        }
+        ctx.restore();
+      }
+      for (const strike of lightningStrikes) {
+        drawLightningStrike(strike.x, strike.y, Math.min(1, strike.life * 5));
+      }
+      drawHealthDrop();
+      drawImpactEffects();
+      drawCinematicOverlay();
+    }
+
+    function takeHit(damage) {
+      if (player.hitCooldown > 0) return;
+      player.health = Math.max(0, player.health - damage);
+      player.hitCooldown = 0.65;
+      updateHud();
+      if (!player.health) {
+        finishGame(chapter === 2 ? "The lightning fighters defeated you!" : "The evil bunnies got you!", "lose");
+      }
+    }
+
+    function updateEnemies(delta) {
+      for (const enemy of enemies) {
+        const dx = player.x - enemy.x;
+        const dy = player.y - enemy.y;
+        const distance = Math.hypot(dx, dy) || 1;
+        const isRanged = ["boss", "fighter", "lightningBoss"].includes(enemy.type);
+        const speed = isRanged ? 28 : enemy.type === "big" ? 38 : 48;
+        if (distance > 28) {
+          enemy.x += dx / distance * speed * delta;
+          enemy.y = Math.max(391, enemy.y + dy / distance * speed * delta);
+        }
+        if (["boss", "fighter", "lightningBoss"].includes(enemy.type)) {
+          enemy.attackTimer -= delta;
+          if (enemy.attackTimer <= 0) {
+            const aimX = player.x - enemy.x;
+            const aimY = player.y - enemy.y;
+            const aimLength = Math.hypot(aimX, aimY) || 1;
+            const isLightning = enemy.type === "fighter" || enemy.type === "lightningBoss";
+            projectiles.push({
+              x: enemy.x, y: enemy.y - 15,
+              vx: aimX / aimLength * (isLightning ? 155 : 145),
+              vy: aimY / aimLength * (isLightning ? 155 : 145),
+              damage: isLightning ? enemy.attackDamage : 20,
+              type: isLightning ? "lightning" : "carrot",
+              life: 4
+            });
+            enemy.attackTimer = enemy.type === "lightningBoss" ? 2.2 : 2.5;
+          }
+        } else if (distance < 30) {
+          takeHit(enemy.type === "guard" ? 30 : enemy.type === "big" ? 10 : 5);
+          if (gameEnded) return;
+        }
+      }
+    }
+
+    function updateProjectiles(delta) {
+      projectiles = projectiles.filter((projectile) => {
+        projectile.x += projectile.vx * delta;
+        projectile.y += projectile.vy * delta;
+        projectile.life -= delta;
+        if (projectile.type === "heroSlash") {
+          projectile.phase += delta * 12;
+          const target = enemies.find((enemy) => enemy.health > 0 && !enemy.dying &&
+            !projectile.hitEnemies.has(enemy) &&
+            Math.hypot(enemy.x - projectile.x, enemy.y - projectile.y) <
+              (["boss", "lightningBoss"].includes(enemy.type) ? 52 : enemy.type === "guard" ? 36 : 30));
+          if (target) {
+            projectile.hitEnemies.add(target);
+            defeatEnemy(target, projectile.damage);
+            impactEffects.push({ x: target.x, y: target.y - 12, life: 0.36, color: "#7ceaff" });
+            enemies = enemies.filter((enemy) => enemy.health > 0 || enemy.dying);
+            if (!enemies.length) completeWave();
+            updateHud();
+            if (!isPlaying) return false;
+          }
+        } else if (projectile.type === "arrow") {
+          const target = enemies.find((enemy) => Math.hypot(enemy.x - projectile.x, enemy.y - projectile.y) <
+            (["boss", "lightningBoss"].includes(enemy.type) ? 48 : 26));
+          if (target) {
+            defeatEnemy(target, projectile.damage);
+            enemies = enemies.filter((enemy) => enemy.health > 0 || enemy.dying);
+            if (!enemies.length) completeWave();
+            updateHud();
+            return false;
+          }
+        } else if (Math.hypot(player.x - projectile.x, player.y - projectile.y) < 20) {
+          takeHit(projectile.damage);
+          return false;
+        }
+        return projectile.life > 0 && projectile.x >= 0 && projectile.x <= canvas.width &&
+          projectile.y >= 0 && projectile.y <= canvas.height;
+      });
+    }
+
+    function updateUltimateStorm(delta) {
+      if (ultimateStormTime <= 0) return;
+      ultimateStormTime = Math.max(0, ultimateStormTime - delta);
+      ultimateStormTimer -= delta;
+      if (ultimateStormTimer > 0 || !enemies.length) return;
+      const targets = enemies.filter((enemy) => enemy.health > 0 && !enemy.dying);
+      if (!targets.length) return;
+      const target = targets[Math.floor(Math.random() * targets.length)];
+      lightningStrikes.push({ x: target.x, y: target.y, life: 0.3 });
+      defeatEnemy(target, 5);
+      enemies = enemies.filter((enemy) => enemy.health > 0 || enemy.dying);
+      if (!enemies.length) completeWave();
+      updateHud();
+      ultimateStormTimer = 0.24;
+    }
+
+    function frame(time) {
+      const delta = Math.min((time - lastFrame) / 1000, 0.05);
+      lastFrame = time;
+      player.attackCooldown = Math.max(0, player.attackCooldown - delta);
+      player.attackAnimation = Math.max(0, player.attackAnimation - delta);
+      player.ultimateAnimation = Math.max(0, player.ultimateAnimation - delta);
+      player.hitCooldown = Math.max(0, player.hitCooldown - delta);
+      cinematicFreeze = Math.max(0, cinematicFreeze - delta);
+      updateCutscenes(delta);
+      lightningStrikes = lightningStrikes.filter((strike) => {
+        strike.life -= delta;
+        return strike.life > 0;
+      });
+      impactEffects = impactEffects.filter((impact) => {
+        impact.life -= delta;
+        return impact.life > 0;
+      });
+      if (sceneTheme === "storm") {
+        stormFlashTimer = Math.max(0, stormFlashTimer - delta);
+        nextStormFlash -= delta;
+        if (nextStormFlash <= 0) {
+          ambientBoltX = 100 + Math.random() * (canvas.width - 200);
+          stormFlashTimer = 0.16;
+          nextStormFlash = 2.5 + Math.random() * 3.5;
+        }
+      }
+      if (isPlaying && cinematicFreeze <= 0) {
+        let dx = 0;
+        let dy = 0;
+        if (heldKeys.has("w") || heldKeys.has("arrowup")) dy -= 1;
+        if (heldKeys.has("s") || heldKeys.has("arrowdown")) dy += 1;
+        if (heldKeys.has("a") || heldKeys.has("arrowleft")) dx -= 1;
+        if (heldKeys.has("d") || heldKeys.has("arrowright")) dx += 1;
+        const length = Math.hypot(dx, dy) || 1;
+        if (dx || dy) {
+          player.facingX = dx / length;
+          player.facingY = dy / length;
+        }
+        player.x = Math.max(24, Math.min(canvas.width - 24, player.x + dx / length * player.speed * delta));
+        player.y = Math.max(391, Math.min(canvas.height - 30, player.y + dy / length * player.speed * delta));
+        updateHealthDrop(delta);
+        updateEnemies(delta);
+        updateProjectiles(delta);
+        updateUltimateStorm(delta);
+      }
+      draw(delta);
+      requestAnimationFrame(frame);
+    }
+
+    function startWave(number, refillHealth = false) {
+      wave = number;
+      enemies = createWaveEnemies(wave);
+      projectiles = [];
+      lightningStrikes = [];
+      ultimateStormTime = 0;
+      player.x = 480;
+      player.y = 391;
+      if (refillHealth) player.health = player.maxHealth;
+      player.hitCooldown = 0;
+      isPlaying = true;
+      gameEnded = false;
+      setMusicScene(wave === 3 ? "boss" : "wave");
+      if (chapter === 2) saveProgress("lightning", wave);
+      else saveProgress("story", wave);
+      updateHud();
+    }
+
+    function drawRollWheel(rotation) {
+      const options = getRollTable().filter((item) => item.chance > 0);
+      const center = wheelCanvas.width / 2;
+      const radius = center - 5;
+      wheelCtx.clearRect(0, 0, wheelCanvas.width, wheelCanvas.height);
+      wheelCtx.save();
+      wheelCtx.translate(center, center);
+      wheelCtx.rotate(rotation);
+      let start = -Math.PI / 2;
+      for (const option of options) {
+        const end = start + option.chance / 100 * Math.PI * 2;
+        const item = weapons.find((entry) => entry.name === option.name);
+        wheelCtx.beginPath();
+        wheelCtx.moveTo(0, 0);
+        wheelCtx.arc(0, 0, radius, start, end);
+        wheelCtx.closePath();
+        wheelCtx.fillStyle = item.rarity === "Common" ? "#858b92" :
+          item.rarity === "Rare" ? "#337fca" : "#8a45ba";
+        wheelCtx.fill();
+        wheelCtx.strokeStyle = "#fff";
+        wheelCtx.lineWidth = 2;
+        wheelCtx.stroke();
+        const middle = (start + end) / 2;
+        const label = item.name === "Bow and Arrow" ? "Bow" :
+          item.name === "Double-Sided Axe" ? "Axe" : item.name.replace("Base ", "");
+        wheelCtx.save();
+        wheelCtx.rotate(middle);
+        wheelCtx.translate(radius * 0.58, 0);
+        wheelCtx.fillStyle = "#fff";
+        wheelCtx.font = option.chance < 15 ? "bold 10px system-ui" : "bold 12px system-ui";
+        wheelCtx.textAlign = "center";
+        wheelCtx.textBaseline = "middle";
+        wheelCtx.fillText(label, 0, 0, radius * 0.75);
+        wheelCtx.restore();
+        start = end;
+      }
+      wheelCtx.beginPath();
+      wheelCtx.arc(0, 0, 18, 0, Math.PI * 2);
+      wheelCtx.fillStyle = "#fffef5";
+      wheelCtx.fill();
+      wheelCtx.strokeStyle = "#193247";
+      wheelCtx.lineWidth = 2;
+      wheelCtx.stroke();
+      wheelCtx.restore();
+    }
+
+    function weaponEffectDescription(item) {
+      const descriptions = {
+        Whip: "A long, cracking lash reaches enemies from far away.",
+        Sword: "A quick, curved sword slash hits nearby enemies.",
+        "Bow and Arrow": "Shoots a fast arrow straight ahead.",
+        "Base Scythe": "Sweeps a crescent blade through nearby enemies; its ultimate spins in a circle.",
+        "Double-Sided Axe": "Chops forward with both axe blades; its ultimate throws the axe.",
+        "Hero's Sword": "A sword slash hits close enemies and launches a flying blue air slash through enemies.",
+        "Lightning Spear": "A spear hit deals 20 damage plus a 20-damage lightning bolt. Its ultimate rains 5-damage lightning bolts."
+      };
+      return descriptions[item.name];
+    }
+
+    function showWeaponReveal() {
+      weaponRevealTitle.textContent = weapon.name;
+      weaponRevealRarity.textContent = weapon.rarity;
+      weaponRevealRarity.className = `rarity-${weapon.rarity.toLowerCase()}`;
+      weaponRevealDamage.textContent = weapon.type === "lightningSpear"
+        ? "Damage: 20 spear + 20 lightning"
+        : weapon.type === "heroSword"
+          ? "Damage: 10 sword slash + 30 air slash"
+          : `Damage: ${weapon.damage} per hit`;
+      weaponRevealEffect.textContent = weaponEffectDescription(weapon);
+      weaponRevealContinue.textContent = chapter === 2
+        ? `Continue to Storm City wave ${wave + 1}`
+        : `Continue to Wave ${wave + 1}`;
+      wavePopup.hidden = true;
+      weaponRevealPopup.hidden = false;
+    }
+
+    function startWeaponRoll() {
+      if (isRolling) return;
+      const options = getRollTable().filter((item) => item.chance > 0);
+      const pick = Math.random() * 100;
+      let before = 0;
+      const choice = options.find((item) => {
+        const selected = pick < before + item.chance;
+        if (!selected) before += item.chance;
+        return selected;
+      });
+      const chosenWeapon = weapons.find((item) => item.name === choice.name);
+      const segmentCenter = -Math.PI / 2 + (before + choice.chance / 2) / 100 * Math.PI * 2;
+      const stopAtPointer = ((-Math.PI / 2 - segmentCenter) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2);
+      const rotations = Math.PI * 2 * 5 + stopAtPointer;
+      const duration = 2600;
+      let startedAt;
+      isRolling = true;
+      rollResultReady = false;
+      keepWeaponButton.disabled = true;
+      rollWeaponButton.disabled = true;
+      wheelWrap.hidden = false;
+      rolledWeaponText.textContent = "Rolling...";
+      rolledWeaponText.className = "";
+      drawRollWheel(0);
+
+      function animateWheel(timestamp) {
+        if (startedAt === undefined) startedAt = timestamp;
+        const progress = Math.min(1, (timestamp - startedAt) / duration);
+        const eased = 1 - Math.pow(1 - progress, 4);
+        drawRollWheel(rotations * eased);
+        if (progress < 1) {
+          requestAnimationFrame(animateWheel);
+          return;
+        }
+        weapon = chosenWeapon;
+        unlockedWeaponNames.add(weapon.name);
+        player.ultimateCharge = 0;
+        isRolling = false;
+        rollResultReady = true;
+        rolledWeaponText.textContent = `You rolled ${weapon.name} (${weapon.rarity})!`;
+        rolledWeaponText.className = `rarity-${weapon.rarity.toLowerCase()}`;
+        weaponText.textContent = `Weapon: ${weapon.name} (${weapon.rarity})`;
+        keepWeaponButton.hidden = true;
+        rollWeaponButton.disabled = true;
+        if (hasSavedGame) saveProgress(savedGame.checkpoint, savedGame.wave);
+        updateHud();
+        showWeaponReveal();
+      }
+      requestAnimationFrame(animateWheel);
+    }
+
+    function continueAfterWave() {
+      wavePopup.hidden = true;
+      weaponRevealPopup.hidden = true;
+      if (wave === 3) {
+        finishGame(chapter === 2
+          ? "You defeated the Lightning Boss and completed the Heavens Arena!"
+          : "You defeated the Bunny Boss and completed story mode!");
+        return;
+      }
+      startWave(wave + 1);
+    }
+
+    accountForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+      authenticateAccount(false);
+    });
+    signInButton.addEventListener("click", () => authenticateAccount(false));
+    createAccountButton.addEventListener("click", () => authenticateAccount(true));
+    keepPlayingButton.addEventListener("click", continueSavedGame);
+    openInventoryButton.addEventListener("click", () => {
+      mainMenu.hidden = true;
+      inventoryPopup.hidden = false;
+      updateInventory();
+    });
+    closeInventoryButton.addEventListener("click", () => {
+      inventoryPopup.hidden = true;
+      mainMenu.hidden = false;
+    });
+    musicButton.addEventListener("click", toggleMusic);
+    document.addEventListener("pointerdown", () => {
+      if (musicEnabled) startMusic();
+    }, { capture: true });
+    document.querySelector("#switchAccountButton").addEventListener("click", () => showAccountScreen());
+    document.querySelector("#stayButton").addEventListener("click", () => {
+      airshipPopup.hidden = true;
+      showLoadingMenu();
+    });
+    document.querySelector("#travelButton").addEventListener("click", startStormTravel);
+    document.querySelector("#openShopButton").addEventListener("click", () => {
+      mainMenu.hidden = true;
+      shopReturnsToWave = false;
+      shopPopup.hidden = false;
+      updateHud();
+    });
+    document.querySelector("#closeShopButton").addEventListener("click", () => {
+      shopPopup.hidden = true;
+      if (shopReturnsToWave) wavePopup.hidden = false;
+      else mainMenu.hidden = false;
+    });
+    document.querySelector("#waveShopButton").addEventListener("click", () => {
+      shopReturnsToWave = true;
+      wavePopup.hidden = true;
+      shopPopup.hidden = false;
+      updateHud();
+    });
+    document.querySelector("#nameBackButton").addEventListener("click", () => {
+      nameScreen.hidden = true;
+      showAccountScreen();
+    });
+    document.querySelector("#buyHealthButton").addEventListener("click", () => {
+      if (coins < 5) {
+        shopHealth.textContent = "Not enough coins. Complete waves to earn more!";
+        return;
+      }
+      coins -= 5;
+      player.maxHealth += 10;
+      player.health += 10;
+      if (hasSavedGame) saveProgress(savedGame.checkpoint, savedGame.wave);
+      updateHud();
+    });
+    buyLuckButton.addEventListener("click", () => {
+      const maxLuckUpgrades = Math.floor((80 - (spearUnlocked ? 40 : 30)) / 10);
+      if (weaponLuckUpgrades >= maxLuckUpgrades) {
+        shopLuck.textContent = "Your better weapon chance is already at its limit.";
+        return;
+      }
+      if (coins < 20) {
+        shopLuck.textContent = "Not enough coins. Complete waves to earn more!";
+        return;
+      }
+      coins -= 20;
+      weaponLuckUpgrades += 1;
+      if (hasSavedGame) saveProgress(savedGame.checkpoint, savedGame.wave);
+      updateHud();
+    });
+    nameForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+      player.name = nameInput.value.trim().slice(0, 16);
+      if (!player.name) {
+        nameInput.setCustomValidity("Please enter a character name.");
+        nameInput.reportValidity();
+        return;
+      }
+      nameInput.setCustomValidity("");
+      nameScreen.hidden = true;
+      weaponPopup.hidden = false;
+    });
+    beginGameButton.addEventListener("click", () => {
+      weaponPopup.hidden = true;
+      gameHud.hidden = false;
+      playHelp.hidden = false;
+      startWave(1, true);
+    });
+    keepWeaponButton.addEventListener("click", continueAfterWave);
+    weaponRevealContinue.addEventListener("click", continueAfterWave);
+    rollWeaponButton.addEventListener("click", () => {
+      if (rollResultReady) continueAfterWave();
+      else startWeaponRoll();
+    });
+    restartButton.addEventListener("click", () => {
+      gameEndPopup.hidden = true;
+      if (savedGame) loadSavedGame();
+      else startWave(wave, true);
+    });
+    nameInput.addEventListener("input", () => nameInput.setCustomValidity(""));
+    document.addEventListener("keydown", (event) => {
+      if (musicEnabled) startMusic();
+      const key = event.key.toLowerCase();
+      if (event.code === "Space" && isPlaying) {
+        event.preventDefault();
+        if (!event.repeat) attack();
+      }
+      if (key === "r" && isPlaying) {
+        event.preventDefault();
+        useUltimate();
+      }
+      if (["w", "a", "s", "d", "arrowup", "arrowdown", "arrowleft", "arrowright"].includes(key)) {
+        event.preventDefault();
+        heldKeys.add(key);
+      }
+    });
+    document.addEventListener("keyup", (event) => heldKeys.delete(event.key.toLowerCase()));
+    window.addEventListener("blur", () => heldKeys.clear());
+    const directionKeys = { up: "w", down: "s", left: "a", right: "d" };
+    for (const button of document.querySelectorAll("[data-direction]")) {
+      const key = directionKeys[button.dataset.direction];
+      button.addEventListener("pointerdown", (event) => {
+        event.preventDefault();
+        heldKeys.add(key);
+        button.setPointerCapture(event.pointerId);
+      });
+      for (const type of ["pointerup", "pointercancel", "lostpointercapture"]) {
+        button.addEventListener(type, () => heldKeys.delete(key));
+      }
+    }
+    document.querySelector("[data-attack]").addEventListener("click", attack);
+    updateHud();
+    updateMusicButton();
+    showAccountScreen();
+    draw(0);
+    requestAnimationFrame(frame);
+  </script>
+</body>
