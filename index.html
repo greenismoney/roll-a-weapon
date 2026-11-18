@@ -502,7 +502,7 @@
       { name: "Base Scythe", rarity: "Rare", damage: 25, range: 72, type: "scythe" },
       { name: "Double-Sided Axe", rarity: "Rare", damage: 30, range: 78, type: "axe" },
       { name: "Hero's Sword", rarity: "Epic", damage: 10, range: 65, type: "heroSword", airDamage: 30 },
-      { name: "Lightning Spear", rarity: "Epic", damage: 20, lightningDamage: 20, range: 160, type: "lightningSpear" }
+      { name: "Lightning Queen's Spear", rarity: "Epic", damage: 20, lightningDamage: 20, range: 160, type: "lightningSpear" }
     ];
     function readSavedGame() {
       try {
@@ -634,7 +634,7 @@
         { name: "Base Scythe", chance: 10 * betterChanceScale },
         { name: "Double-Sided Axe", chance: 10 * betterChanceScale },
         { name: "Hero's Sword", chance: 10 * betterChanceScale },
-        { name: "Lightning Spear", chance: spearUnlocked ? 10 * betterChanceScale : 0 }
+        { name: "Lightning Queen's Spear", chance: spearUnlocked ? 10 * betterChanceScale : 0 }
       ];
     }
 
@@ -1009,13 +1009,18 @@
       weaponLuckUpgrades = Number.isInteger(savedGame.weaponLuckUpgrades)
         ? Math.max(0, Math.min(5, savedGame.weaponLuckUpgrades))
         : 0;
-      weapon = weapons.find((item) => item.name === savedGame.weaponName) || weapons[0];
+      const savedWeaponName = savedGame.weaponName === "Lightning Spear"
+        ? "Lightning Queen's Spear"
+        : savedGame.weaponName;
+      weapon = weapons.find((item) => item.name === savedWeaponName) || weapons[0];
       const savedUnlocks = Array.isArray(savedGame.unlockedWeaponNames)
-        ? savedGame.unlockedWeaponNames.filter((name) => weapons.some((item) => item.name === name))
+        ? savedGame.unlockedWeaponNames
+          .map((name) => name === "Lightning Spear" ? "Lightning Queen's Spear" : name)
+          .filter((name) => weapons.some((item) => item.name === name))
         : [];
-      if (weapons.some((item) => item.name === savedGame.weaponName)) savedUnlocks.push(savedGame.weaponName);
+      if (weapons.some((item) => item.name === savedWeaponName)) savedUnlocks.push(savedWeaponName);
       unlockedWeaponNames = new Set(["Whip", ...savedUnlocks]);
-      if (spearUnlocked) unlockedWeaponNames.add("Lightning Spear");
+      if (spearUnlocked) unlockedWeaponNames.add("Lightning Queen's Spear");
       player.ultimateCharge = 0;
       showLoadingMenu();
     }
@@ -1207,14 +1212,14 @@
         const foundSpear = Math.random() < 0.1;
         if (foundSpear) {
           spearUnlocked = true;
-          unlockedWeaponNames.add("Lightning Spear");
+          unlockedWeaponNames.add("Lightning Queen's Spear");
         }
         else coins += 50;
         saveProgress("lightning", 1);
         updateHud();
         finishGame(foundSpear
-          ? "The Lightning Boss fell! You found the Lightning Spear. It is now on the weapon wheel!"
-          : "The Lightning Boss fell! You found 50 coins.");
+          ? "The Lightning Queen fell! You found the Lightning Queen's Spear. It is now on the weapon wheel!"
+          : "The Lightning Queen fell! You found 50 coins.");
         return;
       }
       saveProgress(chapter === 2 ? "lightning" : "story", Math.min(3, wave + 1));
@@ -2531,7 +2536,7 @@
         }
       }
       if (isBoss) {
-        const label = isLightningBoss ? "Lightning Boss" : "Bunny Boss";
+        const label = isLightningBoss ? "Lightning Queen" : "Bunny Boss";
         ctx.textAlign = "center";
         ctx.font = "bold 16px system-ui";
         ctx.lineWidth = 3;
@@ -2919,7 +2924,7 @@
         "Base Scythe": "Sweeps a crescent blade through nearby enemies; its ultimate spins in a circle.",
         "Double-Sided Axe": "Chops forward with both axe blades; its ultimate throws the axe.",
         "Hero's Sword": "A sword slash hits close enemies and launches a flying blue air slash through enemies.",
-        "Lightning Spear": "A spear hit deals 20 damage plus a 20-damage lightning bolt. Its ultimate rains 5-damage lightning bolts."
+        "Lightning Queen's Spear": "A spear hit deals 20 damage plus a 20-damage lightning bolt. Its ultimate rains 5-damage lightning bolts."
       };
       return descriptions[item.name];
     }
@@ -2997,7 +3002,7 @@
       weaponRevealPopup.hidden = true;
       if (wave === 3) {
         finishGame(chapter === 2
-          ? "You defeated the Lightning Boss and completed the Heavens Arena!"
+          ? "You defeated the Lightning Queen and completed the Heavens Arena!"
           : "You defeated the Bunny Boss and completed story mode!");
         return;
       }
