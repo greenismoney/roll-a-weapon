@@ -418,46 +418,51 @@
 
     .mobile-controls {
       display: none;
+      grid-template-columns: 82px repeat(3, 54px) 82px;
+      grid-template-rows: repeat(3, 54px);
       justify-content: center;
-      align-items: center;
       gap: 6px;
       margin-top: 12px;
     }
 
-    .mobile-dpad {
-      display: grid;
-      grid-template-columns: repeat(3, 54px);
-      gap: 6px;
-    }
-
-    .mobile-actions {
-      display: grid;
-      grid-template-columns: repeat(1, 82px);
-    }
-
-    .mobile-controls button { touch-action: none; }
-    .mobile-actions button {
+    .mobile-controls button {
+      width: 100%;
       min-height: 54px;
-      padding: 8px;
+      padding: 8px 4px;
       font-size: 12px;
       font-weight: 800;
+      touch-action: none;
     }
-    .mobile-actions [data-ultimate] {
+    .mobile-controls [data-ultimate] { grid-column: 1; grid-row: 2; }
+    .mobile-controls [data-direction="up"] { grid-column: 3; grid-row: 1; }
+    .mobile-controls [data-direction="left"] { grid-column: 2; grid-row: 2; }
+    .mobile-controls [data-direction="down"] { grid-column: 3; grid-row: 2; }
+    .mobile-controls [data-direction="right"] { grid-column: 4; grid-row: 2; }
+    .mobile-controls [data-shoot] { grid-column: 5; grid-row: 2; }
+    .mobile-controls [data-shoot] {
+      background: linear-gradient(135deg, #dc4f61, #9d3049);
+      border-radius: 50%;
+    }
+    .mobile-controls [data-ultimate] {
       border: 2px solid #d69bff;
       color: white;
       background: linear-gradient(135deg, #76548f, #49345f);
       opacity: 0.9;
     }
-    .mobile-actions [data-ultimate].ready {
+    .mobile-controls [data-ultimate].ready {
       opacity: 1;
       background: linear-gradient(135deg, #f2c65d, #b86e32);
       color: #20172a;
       box-shadow: 0 0 18px #f2c65d99;
     }
     @media (pointer: coarse), (any-pointer: coarse), (max-width: 900px) {
-      .mobile-controls { display: flex; }
+      .mobile-controls { display: grid; }
     }
-    @media (max-width: 520px) { body { padding: 12px; } }
+    @media (max-width: 520px) {
+      body { padding: 12px; }
+      .mobile-controls { grid-template-columns: 64px repeat(3, 44px) 64px; grid-template-rows: repeat(3, 44px); }
+      .mobile-controls button { min-height: 44px; font-size: 10px; }
+    }
   </style>
 </head>
 <body>
@@ -719,15 +724,12 @@
       </div>
     </section>
     <div class="mobile-controls" aria-label="Movement and combat controls">
-      <div class="mobile-actions" aria-label="Combat controls">
-        <button type="button" data-ultimate aria-label="Use ultimate">ULTIMATE</button>
-      </div>
-      <div class="mobile-dpad" aria-label="Movement controls">
-        <span></span><button type="button" data-direction="up" aria-label="Move up">▲</button><span></span>
-        <button type="button" data-direction="left" aria-label="Move left">◀</button>
-        <button type="button" data-direction="down" aria-label="Move down">▼</button>
-        <button type="button" data-direction="right" aria-label="Move right">▶</button>
-      </div>
+      <button type="button" data-ultimate aria-label="Use ultimate">ULTIMATE</button>
+      <button type="button" data-direction="up" aria-label="Move up">▲</button>
+      <button type="button" data-direction="left" aria-label="Move left">◀</button>
+      <button type="button" data-direction="down" aria-label="Move down">▼</button>
+      <button type="button" data-direction="right" aria-label="Move right">▶</button>
+      <button type="button" data-shoot aria-label="Shoot or attack">SHOOT</button>
     </div>
     <p class="instructions" id="playHelp" hidden>Move with W, A, S, D or the arrow keys. Tap the game screen or press Space to attack. Tap Ultimate when its charge reaches 100. Godlike Combat uses Q for its first move and R for its ultimate.</p>
   </main>
@@ -4592,6 +4594,7 @@
         button.addEventListener(type, () => heldKeys.delete(key));
       }
     }
+    document.querySelector("[data-shoot]").addEventListener("click", attack);
     mobileUltimateButton.addEventListener("click", useUltimate);
     updateHud();
     updateMusicButton();
