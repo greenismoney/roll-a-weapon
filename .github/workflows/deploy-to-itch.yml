@@ -20,4 +20,3 @@ jobs:
         env:
           BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
         run: ./butler push . greenismoney/roll-a-weapon:html
-        

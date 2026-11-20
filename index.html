@@ -106,6 +106,10 @@
     .rarity-common { color: #70777d !important; }
     .rarity-rare { color: #2672cf !important; }
     .rarity-epic { color: #8744bd !important; }
+    .rarity-legendary { color: #d18422 !important; }
+    .rarity-mythic { color: #c33b68 !important; }
+    .rarity-secret { color: #6a4ac7 !important; }
+    .rarity-godlike { color: #bd6c18 !important; }
     .wheel-wrap {
       position: relative;
       width: min(300px, 100%);
@@ -440,9 +444,21 @@
         <span id="waveText">Wave: 1 / 3</span><br>
         <span id="bunnyCount">Enemies: 3</span><br>
         <span id="coinsText">Coins: 0</span><br>
+        <span id="shardsText">Heavenly Shards: 0</span><br>
         <span id="weaponText">Weapon: Whip (Common)</span><br>
         <span id="ultimateText">Ultimate: 0 / 100 damage (R)</span><br>
         <span id="healthDropText">Health drop: 10s</span>
+      </div>
+      <div class="game-popup" id="heavenlyChoicePopup" hidden>
+        <div class="popup-card">
+          <h2>Heavenly Realm</h2>
+          <p>Two signs point the way. Choose your path.</p>
+          <div class="popup-actions">
+            <button type="button" id="enterHeavenlyArenaButton">Heavenly Arena</button>
+            <button type="button" class="secondary-button" id="enterHeavenlyDojoButton" disabled>Heavenly Dojo — locked</button>
+            <button type="button" class="secondary-button" id="heavenlyMenuButton">Back to world map</button>
+          </div>
+        </div>
       </div>
       <div class="menu-screen" id="mainMenu" hidden>
         <div class="world-map-card">
@@ -527,6 +543,9 @@
               </button>
               <button type="button" class="map-node" data-map-stage="9" style="--map-x:63%;--map-y:76%" aria-label="Gorilla Jungle, Gorilla Emperor">
                 <span class="map-node-number">09</span><span class="map-node-mark"></span>
+              </button>
+              <button type="button" class="map-node" data-map-stage="10" style="--map-x:52%;--map-y:18%" aria-label="Heavenly Gate">
+                <span class="map-node-number">10</span><span class="map-node-mark"></span>
               </button>
             </div>
             <aside class="map-destination" aria-live="polite">
@@ -676,7 +695,7 @@
       <button type="button" data-direction="right" aria-label="Move right">▶</button>
       <button type="button" data-attack>Attack</button>
     </div>
-    <p class="instructions" id="playHelp" hidden>Move with W, A, S, D or the arrow keys. Press Space (or tap Attack) to attack. Press R to use a charged ultimate.</p>
+    <p class="instructions" id="playHelp" hidden>Move with W, A, S, D or the arrow keys. Press Space (or tap Attack) to attack. Godlike Combat uses Q for its first move and R for its ultimate.</p>
   </main>
 
   <script>
@@ -737,6 +756,10 @@
     const gameEndMessage = document.querySelector("#gameEndMessage");
     const gameEndDialogue = document.querySelector("#gameEndDialogue");
     const restartButton = document.querySelector("#restartGame");
+    const heavenlyChoicePopup = document.querySelector("#heavenlyChoicePopup");
+    const enterHeavenlyArenaButton = document.querySelector("#enterHeavenlyArenaButton");
+    const enterHeavenlyDojoButton = document.querySelector("#enterHeavenlyDojoButton");
+    const heavenlyMenuButton = document.querySelector("#heavenlyMenuButton");
     const gorillaIntroPopup = document.querySelector("#gorillaIntroPopup");
     const gorillaIntroContinue = document.querySelector("#gorillaIntroContinue");
     const bossDeathPopup = document.querySelector("#bossDeathPopup");
@@ -750,6 +773,7 @@
     const bunnyCount = document.querySelector("#bunnyCount");
     const waveText = document.querySelector("#waveText");
     const coinsText = document.querySelector("#coinsText");
+    const shardsText = document.querySelector("#shardsText");
     const weaponText = document.querySelector("#weaponText");
     const ultimateText = document.querySelector("#ultimateText");
     const playHelp = document.querySelector("#playHelp");
@@ -767,12 +791,41 @@
       { name: "Whip", rarity: "Common", damage: 10, range: 150, type: "whip" },
       { name: "Sword", rarity: "Common", damage: 15, range: 65, type: "sword" },
       { name: "Bow and Arrow", rarity: "Common", damage: 5, range: 320, type: "bow" },
+      { name: "Kunai", rarity: "Common", damage: 8, range: 220, type: "kunai" },
       { name: "Base Scythe", rarity: "Rare", damage: 25, range: 72, type: "scythe" },
       { name: "Double-Sided Axe", rarity: "Rare", damage: 30, range: 78, type: "axe" },
       { name: "Hero's Sword", rarity: "Epic", damage: 10, range: 65, type: "heroSword", airDamage: 30 },
       { name: "Lightning Queen's Spear", rarity: "Epic", damage: 20, lightningDamage: 20, range: 160, type: "lightningSpear" },
-      { name: "Monkey Horn", rarity: "Epic", damage: 20, range: 90, type: "monkeyHorn" }
+      { name: "Monkey Horn", rarity: "Epic", damage: 20, range: 90, type: "monkeyHorn" },
+      { name: "Godlike Combat", rarity: "Mythic", damage: 60, range: 95, firstMoveDamage: 75, ultimateDamage: 85, type: "combat" }
     ];
+    const heavenlyWeaponRecipes = [
+      { source: "Whip", name: "Cloud Whipper" },
+      { source: "Sword", name: "Angelic Sword" },
+      { source: "Bow and Arrow", name: "Heavenly Bow and Arrow" },
+      { source: "Kunai", name: "Halos" },
+      { source: "Base Scythe", name: "Heavenly Scythe" },
+      { source: "Double-Sided Axe", name: "Astral Pendulum" },
+      { source: "Hero's Sword", name: "Heavenly Hero's Sword (HHS)" },
+      { source: "Lightning Queen's Spear", name: "Heavenly Spear" },
+      { source: "Monkey Horn", name: "Celestial Horn" }
+    ];
+    const rarityOrder = ["Common", "Rare", "Epic", "Legendary", "Mythic", "Secret", "Godlike"];
+    for (const recipe of heavenlyWeaponRecipes) {
+      const source = weapons.find((item) => item.name === recipe.source);
+      const rarity = rarityOrder[Math.min(rarityOrder.length - 1, rarityOrder.indexOf(source.rarity) + 1)];
+      weapons.push({
+        ...source,
+        name: recipe.name,
+        rarity,
+        damage: source.damage * 10,
+        range: source.range * 1.5,
+        ...(source.lightningDamage ? { lightningDamage: source.lightningDamage * 10 } : {}),
+        ...(source.airDamage ? { airDamage: source.airDamage * 10 } : {}),
+        heavenly: true,
+        sourceName: source.name
+      });
+    }
     const mapDestinations = [
       {
         stage: 1, chapter: 1, wave: 1, name: "Bunny Meadow",
@@ -827,6 +880,12 @@
         description: "Take on the Gorilla Emperor and his three armored guards.",
         reward: "BOSS REWARD · MONKEY HORN (10% CHANCE) OR 100 COINS",
         requirement: "Clear Gorilla Jungle — Wave 2."
+      },
+      {
+        stage: 10, chapter: 4, wave: 1, name: "Heavenly Gate",
+        description: "Ascend after defeating the Lightning Queen, then choose the Arena or the Dojo.",
+        reward: "HEAVENLY ARENA · THREE WAVES · 10% SHARD DROP FROM THE HERO",
+        requirement: "Defeat the Lightning Queen."
       }
     ];
     function readSavedGame() {
@@ -896,6 +955,10 @@
     let activeUsername = "";
     let chapter = 1;
     let spearUnlocked = false;
+    let heavenlyGateUnlocked = false;
+    let heavenlyDojoUnlocked = false;
+    let godlikeCombatUnlocked = false;
+    let heavenlyShards = 0;
     let unlockedWeaponNames = new Set(["Whip"]);
     let weapon = weapons[0];
     let wave = 1;
@@ -931,6 +994,9 @@
     let rainOffset = 0;
     let lightningStrikes = [];
     let impactEffects = [];
+    let combatParticles = [];
+    let motionTrails = [];
+    let motionTrailTimer = 0;
     let healthDrop = null;
     let healthDropTimer = 10;
     let saveWarning = "";
@@ -956,19 +1022,16 @@
     function getRollTable() {
       const baseBetterChance = 30 + Number(spearUnlocked) * 10 + Number(monkeyHornUnlocked) * 10;
       const betterChance = Math.min(80, baseBetterChance + weaponLuckUpgrades * 10);
-      const betterChanceScale = betterChance / baseBetterChance;
-      const commonChance = (100 - betterChance) / 3;
-      const options = [
-        { name: "Whip", chance: commonChance },
-        { name: "Sword", chance: commonChance },
-        { name: "Bow and Arrow", chance: commonChance },
-        { name: "Base Scythe", chance: 10 * betterChanceScale },
-        { name: "Double-Sided Axe", chance: 10 * betterChanceScale },
-        { name: "Hero's Sword", chance: 10 * betterChanceScale },
-        { name: "Lightning Queen's Spear", chance: spearUnlocked ? 10 * betterChanceScale : 0 },
-        { name: "Monkey Horn", chance: monkeyHornUnlocked ? 10 * betterChanceScale : 0 }
+      const commonWeapons = weapons.filter((item) =>
+        !item.heavenly && item.rarity === "Common" && item.type !== "combat");
+      const betterWeapons = weapons.filter((item) =>
+        !item.heavenly && item.rarity !== "Common" && item.type !== "combat" &&
+        (item.type !== "lightningSpear" || spearUnlocked) &&
+        (item.type !== "monkeyHorn" || monkeyHornUnlocked));
+      return [
+        ...commonWeapons.map((item) => ({ name: item.name, chance: (100 - betterChance) / commonWeapons.length })),
+        ...betterWeapons.map((item) => ({ name: item.name, chance: betterChance / betterWeapons.length }))
       ];
-      return options;
     }
 
     function createWaveEnemies(number) {
@@ -990,6 +1053,27 @@
           { x: 420, y: 510, health: 75, maxHealth: 75, type: "armoredGorilla", attackDamage: 40 },
           { x: 840, y: 440, health: 75, maxHealth: 75, type: "armoredGorilla", attackDamage: 40 }
         ];
+      }
+      if (chapter === 4) {
+        if (number === 1) {
+          return [120, 420, 720].map((x) => ({
+            x, y: 440, health: 30, maxHealth: 30, type: "heavenlyBow", attackTimer: 1.4, attackDamage: 10
+          }));
+        }
+        if (number === 2) {
+          return [{ x: 720, y: 440, health: 40, maxHealth: 40, type: "heavenlyScythe", attackDamage: 15 }];
+        }
+        return [
+          { x: 720, y: 435, health: 65, maxHealth: 65, type: "heavenlyHero", attackTimer: 1.6, attackDamage: 18 },
+          { x: 220, y: 440, health: 30, maxHealth: 30, type: "heavenlyBow", attackTimer: 1.2, attackDamage: 10 },
+          { x: 820, y: 440, health: 30, maxHealth: 30, type: "heavenlyBow", attackTimer: 1.8, attackDamage: 10 }
+        ];
+      }
+      if (chapter === 5) {
+        return [{
+          x: 720, y: 440, health: 110, maxHealth: 110,
+          type: "dojoMaster", attackTimer: 2.2, ultimateTimer: 7, attackDamage: 60
+        }];
       }
       if (chapter === 2) {
         if (number === 1) {
@@ -1029,6 +1113,10 @@
         unlockedWeaponNames: [...unlockedWeaponNames],
         spearUnlocked,
         monkeyHornUnlocked,
+        heavenlyGateUnlocked,
+        heavenlyDojoUnlocked,
+        godlikeCombatUnlocked,
+        heavenlyShards,
         weaponLuckUpgrades,
         healthUpgradeCount,
         highestMapStage: highestUnlockedMapStage,
@@ -1047,7 +1135,39 @@
 
     function isWeaponUnlocked(item) {
       return unlockedWeaponNames.has(item.name) ||
-        (item.type === "lightningSpear" && spearUnlocked);
+        (item.type === "lightningSpear" && spearUnlocked) ||
+        (item.type === "monkeyHorn" && monkeyHornUnlocked) ||
+        (item.type === "combat" && godlikeCombatUnlocked);
+    }
+
+    function shardCostForRarity(rarity) {
+      return ({ Common: 1, Rare: 3, Epic: 5, Legendary: 7, Mythic: 10, Secret: 15, Godlike: 20 })[rarity] || 1;
+    }
+
+    function getWeaponEffectColor() {
+      return weapon.heavenly || weapon.type === "combat" ? "#ffe58b" :
+        weapon.type === "lightningSpear" ? "#75eaff" :
+          weapon.type === "heroSword" ? "#a4e8ff" :
+            weapon.type === "axe" ? "#ffe09a" :
+              weapon.type === "scythe" ? "#d9e1e8" : "#b9f4ff";
+    }
+
+    function emitImpactParticles(x, y, color) {
+      for (let index = 0; index < 9; index++) {
+        const angle = Math.PI * 2 * index / 9 + Math.random() * 0.28;
+        const speed = 42 + Math.random() * 106;
+        const life = 0.28 + Math.random() * 0.2;
+        combatParticles.push({
+          x, y,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed - 22,
+          life,
+          maxLife: life,
+          size: 2 + Math.random() * 2.5,
+          color
+        });
+      }
+      if (combatParticles.length > 110) combatParticles.splice(0, combatParticles.length - 110);
     }
 
     function drawInventoryIcon(canvas, item, unlocked) {
@@ -1057,7 +1177,8 @@
       if (!icon) return;
       const dark = "#273440";
       const metal = unlocked
-        ? item.type === "heroSword" ? "#b493ef" : item.type === "lightningSpear" ? "#68dff5" :
+        ? item.heavenly ? "#ffe58b" :
+          item.type === "heroSword" ? "#b493ef" : item.type === "lightningSpear" ? "#68dff5" :
           item.type === "monkeyHorn" ? "#f2c65d" : "#c4d6df"
         : dark;
       const wood = unlocked ? "#805633" : dark;
@@ -1175,13 +1296,34 @@
         icon.lineTo(39, -36);
         icon.closePath();
         icon.fill();
+      } else if (item.type === "kunai") {
+        icon.lineWidth = 6;
+        icon.strokeStyle = wood;
+        icon.beginPath();
+        icon.moveTo(-26, 27);
+        icon.lineTo(20, -19);
+        icon.stroke();
+        icon.fillStyle = metal;
+        icon.beginPath();
+        icon.moveTo(14, -25);
+        icon.lineTo(43, -43);
+        icon.lineTo(31, -14);
+        icon.lineTo(18, -13);
+        icon.closePath();
+        icon.fill();
+      } else if (item.type === "combat") {
+        icon.fillStyle = metal;
+        icon.beginPath();
+        icon.arc(-12, 4, 17, 0, Math.PI * 2);
+        icon.arc(12, -6, 17, 0, Math.PI * 2);
+        icon.fill();
       }
       icon.restore();
     }
 
     function updateInventory() {
       const unlockedCount = weapons.filter(isWeaponUnlocked).length;
-      inventorySummary.textContent = `${unlockedCount} of ${weapons.length} weapons unlocked`;
+      inventorySummary.textContent = `${unlockedCount} of ${weapons.length} weapons unlocked · Heavenly Shards: ${heavenlyShards}`;
       inventoryItems.replaceChildren();
       for (const item of weapons) {
         const unlocked = isWeaponUnlocked(item);
@@ -1198,10 +1340,43 @@
         rarity.textContent = item.rarity;
         const status = document.createElement("p");
         status.className = unlocked ? "inventory-unlocked" : "inventory-locked";
-        status.textContent = unlocked
-          ? "Unlocked"
-          : ["lightningSpear", "monkeyHorn"].includes(item.type) ? "Locked — boss drop" : "Locked — roll to unlock";
+        const source = item.heavenly ? weapons.find((entry) => entry.name === item.sourceName) : null;
+        const cost = item.heavenly && source ? shardCostForRarity(source.rarity) : 0;
+        status.textContent = unlocked ? "Unlocked" : item.heavenly
+          ? `Shadowy — ${source && isWeaponUnlocked(source) ? `${cost} shard${cost === 1 ? "" : "s"}` : "unlock its base weapon first"}`
+          : item.type === "combat" ? "Locked — Heavenly Dojo reward"
+            : ["lightningSpear", "monkeyHorn"].includes(item.type) ? "Locked — boss drop" : "Locked — roll to unlock";
         card.append(art, name, rarity, status);
+        if (unlocked && weapon.name !== item.name) {
+          const equipButton = document.createElement("button");
+          equipButton.type = "button";
+          equipButton.textContent = "Equip";
+          equipButton.addEventListener("click", () => {
+            weapon = item;
+            player.ultimateCharge = 0;
+            if (hasSavedGame) saveProgress(savedGame.checkpoint, savedGame.wave);
+            updateHud();
+            updateInventory();
+          });
+          card.append(equipButton);
+        }
+        if (item.heavenly && !unlocked && source && isWeaponUnlocked(source)) {
+          const infuseButton = document.createElement("button");
+          infuseButton.type = "button";
+          infuseButton.textContent = `Infuse — ${cost} shard${cost === 1 ? "" : "s"}`;
+          infuseButton.disabled = heavenlyShards < cost;
+          infuseButton.addEventListener("click", () => {
+            if (heavenlyShards < cost) return;
+            heavenlyShards -= cost;
+            unlockedWeaponNames.add(item.name);
+            weapon = item;
+            player.ultimateCharge = 0;
+            if (hasSavedGame) saveProgress(savedGame.checkpoint, savedGame.wave);
+            updateHud();
+            updateInventory();
+          });
+          card.append(infuseButton);
+        }
         inventoryItems.append(card);
       }
     }
@@ -1301,6 +1476,7 @@
       wavePopup.hidden = true;
       shopPopup.hidden = true;
       gameEndPopup.hidden = true;
+      heavenlyChoicePopup.hidden = true;
       gorillaIntroPopup.hidden = true;
       nameScreen.hidden = true;
       mainMenu.hidden = false;
@@ -1310,7 +1486,7 @@
     }
 
     function getCurrentMapStage() {
-      return Math.max(1, Math.min(9, (chapter - 1) * 3 + wave));
+      return chapter >= 4 ? 10 : Math.max(1, Math.min(9, (chapter - 1) * 3 + wave));
     }
 
     function unlockMapStage(stage) {
@@ -1363,6 +1539,10 @@
     function travelToSelectedMapStage() {
       const destination = mapDestinations.find((item) => item.stage === selectedMapStage);
       if (!destination || !unlockedMapStages.has(destination.stage)) return;
+      if (destination.stage === 10) {
+        openHeavenlyChoice();
+        return;
+      }
       chapter = destination.chapter;
       wave = destination.wave;
       sceneTheme = chapter === 2 ? "storm" : chapter === 3 ? "jungle" : "meadow";
@@ -1370,6 +1550,31 @@
       gameHud.hidden = false;
       playHelp.hidden = false;
       startWave(destination.wave);
+    }
+
+    function openHeavenlyChoice() {
+      if (!heavenlyGateUnlocked) return;
+      gameEndPopup.hidden = true;
+      mainMenu.hidden = true;
+      gameHud.hidden = true;
+      playHelp.hidden = true;
+      heavenlyChoicePopup.hidden = false;
+      enterHeavenlyDojoButton.disabled = !heavenlyDojoUnlocked;
+      enterHeavenlyDojoButton.textContent = heavenlyDojoUnlocked
+        ? "Heavenly Dojo"
+        : "Heavenly Dojo — locked (clear the Arena)";
+      setMusicScene("menu");
+    }
+
+    function enterHeavenlyDestination(destinationChapter) {
+      if (!heavenlyGateUnlocked || (destinationChapter === 5 && !heavenlyDojoUnlocked)) return;
+      heavenlyChoicePopup.hidden = true;
+      chapter = destinationChapter;
+      wave = 1;
+      sceneTheme = "heavenly";
+      gameHud.hidden = false;
+      playHelp.hidden = false;
+      startWave(1, true);
     }
 
     function showAccountScreen(message = "") {
@@ -1389,6 +1594,10 @@
       savedGame = null;
       chapter = 1;
       spearUnlocked = false;
+      heavenlyGateUnlocked = false;
+      heavenlyDojoUnlocked = false;
+      godlikeCombatUnlocked = false;
+      heavenlyShards = 0;
       weaponLuckUpgrades = 0;
       healthUpgradeCount = 0;
       monkeyHornUnlocked = false;
@@ -1417,6 +1626,7 @@
       gameHud.hidden = true;
       playHelp.hidden = true;
       gameEndPopup.hidden = true;
+      heavenlyChoicePopup.hidden = true;
       gorillaIntroPopup.hidden = true;
       airshipPopup.hidden = true;
       stormPopup.hidden = true;
@@ -1444,7 +1654,8 @@
 
     function loadSavedGame() {
       if (!savedGame) return;
-      chapter = savedGame.chapter === 3 ? 3 : savedGame.chapter === 2 ? 2 : 1;
+      chapter = savedGame.chapter === 5 ? 5 : savedGame.chapter === 4 ? 4 :
+        savedGame.chapter === 3 ? 3 : savedGame.chapter === 2 ? 2 : 1;
       coins = Number.isFinite(savedGame.coins) ? savedGame.coins : coins;
       player.maxHealth = Number.isFinite(savedGame.maxHealth) ? savedGame.maxHealth : player.maxHealth;
       player.health = Number.isFinite(savedGame.health)
@@ -1452,6 +1663,12 @@
         : player.maxHealth;
       player.name = typeof savedGame.name === "string" ? savedGame.name : player.name;
       spearUnlocked = savedGame.spearUnlocked === true;
+      heavenlyGateUnlocked = savedGame.heavenlyGateUnlocked === true ||
+        (Array.isArray(savedGame.unlockedMapStages) && savedGame.unlockedMapStages.includes(10));
+      heavenlyDojoUnlocked = savedGame.heavenlyDojoUnlocked === true;
+      godlikeCombatUnlocked = savedGame.godlikeCombatUnlocked === true ||
+        (Array.isArray(savedGame.unlockedWeaponNames) && savedGame.unlockedWeaponNames.includes("Godlike Combat"));
+      heavenlyShards = Number.isInteger(savedGame.heavenlyShards) ? Math.max(0, savedGame.heavenlyShards) : 0;
       weaponLuckUpgrades = Number.isInteger(savedGame.weaponLuckUpgrades)
         ? Math.max(0, Math.min(5, savedGame.weaponLuckUpgrades))
         : 0;
@@ -1470,15 +1687,18 @@
       monkeyHornUnlocked = savedGame.monkeyHornUnlocked === true ||
         unlockedWeaponNames.has("Monkey Horn");
       if (monkeyHornUnlocked) unlockedWeaponNames.add("Monkey Horn");
+      if (godlikeCombatUnlocked) unlockedWeaponNames.add("Godlike Combat");
       const savedWave = [1, 2, 3].includes(savedGame.wave) ? savedGame.wave : 1;
-      const legacyHighestMapStage = Math.max(1, Math.min(9, (chapter - 1) * 3 + savedWave));
+      const legacyHighestMapStage = heavenlyGateUnlocked ? 10 :
+        Math.max(1, Math.min(9, (chapter - 1) * 3 + savedWave));
       highestUnlockedMapStage = Number.isInteger(savedGame.highestMapStage)
-        ? Math.max(legacyHighestMapStage, Math.max(1, Math.min(9, savedGame.highestMapStage)))
+        ? Math.max(legacyHighestMapStage, Math.max(1, Math.min(10, savedGame.highestMapStage)))
         : legacyHighestMapStage;
       unlockedMapStages = Array.isArray(savedGame.unlockedMapStages)
-        ? new Set(savedGame.unlockedMapStages.filter((stage) => Number.isInteger(stage) && stage >= 1 && stage <= 9))
+        ? new Set(savedGame.unlockedMapStages.filter((stage) => Number.isInteger(stage) && stage >= 1 && stage <= 10))
         : new Set(Array.from({ length: highestUnlockedMapStage }, (_, index) => index + 1));
       unlockedMapStages.add(1);
+      if (heavenlyGateUnlocked) unlockMapStage(10);
       if (savedGame.checkpoint === "airship") unlockMapStage(4);
       healthUpgradeCount = Number.isInteger(savedGame.healthUpgradeCount)
         ? Math.max(0, Math.min(1000000, savedGame.healthUpgradeCount))
@@ -1492,11 +1712,19 @@
         startAccountGame();
         return;
       }
+      if (heavenlyGateUnlocked &&
+          ((chapter === 2 && savedGame.checkpoint === "lightning" && savedGame.wave === 1) ||
+            (chapter === 4 && savedGame.wave === 3 && heavenlyDojoUnlocked) ||
+            (chapter === 5 && godlikeCombatUnlocked))) {
+        openHeavenlyChoice();
+        return;
+      }
       if (savedGame.checkpoint === "airship") {
         startAirshipCutscene();
         return;
       }
-      sceneTheme = chapter === 2 ? "storm" : chapter === 3 ? "jungle" : "meadow";
+      sceneTheme = chapter === 2 ? "storm" : chapter === 3 ? "jungle" :
+        chapter >= 4 ? "heavenly" : "meadow";
       mainMenu.hidden = true;
       gameHud.hidden = false;
       playHelp.hidden = false;
@@ -1568,7 +1796,8 @@
         monkeyHornUnlocked = savedGame?.monkeyHornUnlocked === true ||
           (Array.isArray(savedGame?.unlockedWeaponNames) && savedGame.unlockedWeaponNames.includes("Monkey Horn"));
         weapon = weapons.find((item) => item.name === savedGame?.weaponName) || weapons[0];
-        chapter = savedGame?.chapter === 3 ? 3 : savedGame?.chapter === 2 ? 2 : 1;
+        chapter = savedGame?.chapter === 5 ? 5 : savedGame?.chapter === 4 ? 4 :
+          savedGame?.chapter === 3 ? 3 : savedGame?.chapter === 2 ? 2 : 1;
         wave = [1, 2, 3].includes(savedGame?.wave) ? savedGame.wave : 1;
         player.ultimateCharge = 0;
         if (savedGame) loadSavedGame();
@@ -1600,10 +1829,13 @@
         player.health <= player.maxHealth * 0.6 ? "#e6ae36" : "#4bc66b";
       healthTrack.setAttribute("aria-valuemax", String(player.maxHealth));
       healthTrack.setAttribute("aria-valuenow", String(player.health));
-      const chapterName = chapter === 2 ? "Storm City" : chapter === 3 ? "Gorilla Jungle" : "Story";
-      waveText.textContent = `${chapterName} — Wave: ${wave} / 3`;
-      bunnyCount.textContent = `${chapter === 3 ? "Jungle enemies" : chapter === 2 ? "Enemies" : "Evil bunnies"}: ${enemies.length}`;
+      const chapterName = chapter === 2 ? "Storm City" : chapter === 3 ? "Gorilla Jungle" :
+        chapter === 4 ? "Heavenly Arena" : chapter === 5 ? "Heavenly Dojo" : "Story";
+      waveText.textContent = chapter === 5 ? `${chapterName} — Dojo Master` : `${chapterName} — Wave: ${wave} / 3`;
+      bunnyCount.textContent = `${chapter >= 4 ? "Heavenly fighters" :
+        chapter === 3 ? "Jungle enemies" : chapter === 2 ? "Enemies" : "Evil bunnies"}: ${enemies.length}`;
       coinsText.textContent = `Coins: ${coins}`;
+      shardsText.textContent = `Heavenly Shards: ${heavenlyShards}`;
       weaponText.textContent = `Weapon: ${weapon.name} (${weapon.rarity})`;
       ultimateText.textContent = weapon.rarity === "Common"
         ? "Ultimate: unavailable for Common weapons"
@@ -1634,7 +1866,11 @@
       gameEndMessage.textContent = message;
       gameEndDialogue.textContent = dialogue;
       gameEndDialogue.hidden = !dialogue;
-      restartButton.textContent = "Keep Playing";
+      restartButton.textContent = heavenlyGateUnlocked &&
+        ((chapter === 2 && wave === 3) || (chapter === 4 && wave === 3) ||
+          (chapter === 5 && godlikeCombatUnlocked))
+        ? "Choose a heavenly path"
+        : "Keep Playing";
       gameEndPopup.hidden = false;
       heldKeys.clear();
     }
@@ -1643,6 +1879,7 @@
       if (enemy.health <= 0 || enemy.dying) return;
       enemy.health -= damage;
       enemy.hitFlash = 0.14;
+      emitImpactParticles(enemy.x, enemy.y - 12, getWeaponEffectColor());
       if (weapon.rarity !== "Common") player.ultimateCharge = Math.min(100, player.ultimateCharge + damage);
       if (enemy.health <= 0 && chapter === 1 && wave === 3 && enemy.type === "boss") {
         enemy.health = 0;
@@ -1683,7 +1920,7 @@
       if (!isPlaying) return;
       isPlaying = false;
       heldKeys.clear();
-      if (wave < 3) unlockMapStage((chapter - 1) * 3 + wave + 1);
+      if (wave < 3 && chapter <= 3) unlockMapStage((chapter - 1) * 3 + wave + 1);
       coins += 5;
       if (chapter === 3 && wave === 3) {
         unlockMapStage(9);
@@ -1702,6 +1939,26 @@
         "win", "\"Bunny didnt tell me you were strong!?\"");
         return;
       }
+      if (chapter === 4 && wave === 3) {
+        heavenlyDojoUnlocked = true;
+        const foundShard = Math.random() < 0.1;
+        if (foundShard) heavenlyShards += 1;
+        unlockMapStage(10);
+        saveProgress("heavenly", 3);
+        updateHud();
+        finishGame(foundShard
+          ? "The Heavenly Hero fell! You found 1 Heavenly Shard, and the Heavenly Dojo is now open."
+          : "The Heavenly Hero fell! The Heavenly Dojo is now open. The Hero had no shard this time.");
+        return;
+      }
+      if (chapter === 5) {
+        godlikeCombatUnlocked = true;
+        unlockedWeaponNames.add("Godlike Combat");
+        saveProgress("heavenly", 1);
+        updateHud();
+        finishGame("The Heavenly Dojo master fell! Godlike Combat is yours (100% drop).");
+        return;
+      }
       if (chapter === 2 && wave === 3) {
         unlockMapStage(6);
         const foundSpear = Math.random() < 0.1;
@@ -1710,18 +1967,21 @@
           unlockedWeaponNames.add("Lightning Queen's Spear");
         }
         else coins += 50;
+        heavenlyGateUnlocked = true;
+        unlockMapStage(10);
         saveProgress("lightning", 1);
         updateHud();
         finishGame(foundSpear
-          ? "The Lightning Queen fell! You found the Lightning Queen's Spear. It is now on the weapon wheel!"
-          : "The Lightning Queen fell! You found 50 coins.");
+          ? "The Lightning Queen fell! You found the Lightning Queen's Spear. The way to the Heavenly Realm is open!"
+          : "The Lightning Queen fell! You found 50 coins, and the way to the Heavenly Realm is open.");
         return;
       }
-      const checkpoint = chapter === 2 ? "lightning" : chapter === 3 ? "gorilla" : "story";
+      const checkpoint = chapter === 2 ? "lightning" : chapter === 3 ? "gorilla" :
+        chapter >= 4 ? "heavenly" : "story";
       saveProgress(checkpoint, Math.min(3, wave + 1));
       waveMessage.textContent = `Wave ${wave} cleared!`;
       waveReward.textContent = `You earned 5 coins. ${chapter === 2 ? "Storm City wave cleared!" :
-        chapter === 3 ? "Gorilla Jungle wave cleared!" : ""}`;
+        chapter === 3 ? "Gorilla Jungle wave cleared!" : chapter === 4 ? "Heavenly Arena wave cleared!" : ""}`;
       rolledWeaponText.textContent = "";
       rolledWeaponText.className = "";
       wheelWrap.hidden = true;
@@ -1733,7 +1993,8 @@
       isRolling = false;
       rollResultReady = false;
       wavePopup.hidden = false;
-      saveProgress(chapter === 2 ? "lightning" : chapter === 3 ? "gorilla" : "story", wave);
+      saveProgress(chapter === 2 ? "lightning" : chapter === 3 ? "gorilla" :
+        chapter >= 4 ? "heavenly" : "story", wave);
       updateHud();
     }
 
@@ -1784,13 +2045,22 @@
 
     function attack() {
       if (!isPlaying || player.attackCooldown > 0) return;
-      player.attackCooldown = weapon.type === "bow" ? 0.55 : 0.45;
+      player.attackCooldown = weapon.type === "bow" || weapon.type === "kunai" ? 0.55 : 0.45;
       player.attackAnimation = 0.24;
       cameraShake = Math.max(cameraShake, 0.08);
       if (weapon.type === "bow") {
+        const arrows = weapon.heavenly ? [-0.12, 0, 0.12] : [0];
+        for (const spread of arrows) {
+          const angle = Math.atan2(player.facingY, player.facingX) + spread;
+          projectiles.push({
+            x: player.x, y: player.y - 8, vx: Math.cos(angle) * 380, vy: Math.sin(angle) * 380,
+            damage: weapon.damage, type: "arrow", life: 0.9, heavenly: weapon.heavenly
+          });
+        }
+      } else if (weapon.type === "kunai") {
         projectiles.push({
-          x: player.x, y: player.y - 8, vx: player.facingX * 380, vy: player.facingY * 380,
-          damage: weapon.damage, type: "arrow", life: 0.9
+          x: player.x, y: player.y - 8, vx: player.facingX * 450, vy: player.facingY * 450,
+          damage: weapon.damage, type: "kunai", life: 0.9, heavenly: weapon.heavenly
         });
       } else if (weapon.type === "lightningSpear") {
         const totalDamage = weapon.damage + weapon.lightningDamage;
@@ -1810,6 +2080,7 @@
             vy: player.facingY * 520,
             damage: weapon.airDamage,
             type: "heroSlash",
+            heavenly: weapon.heavenly,
             life: 0.7,
             phase: 0,
             hitEnemies: new Set()
@@ -1827,14 +2098,20 @@
       cameraShake = 0.45;
       player.moving = false;
       const ultimateNames = {
+        whip: weapon.name === "Cloud Whipper" ? "CLOUD WHIPPER" : "WHIPPING STORM",
+        sword: weapon.name === "Angelic Sword" ? "ANGEL WING SLASH" : "SWORDSTORM",
+        bow: "GOLDEN ARROW RAIN",
+        kunai: "HALO BARRAGE",
         scythe: "REAPER'S SPIN",
-        axe: "THUNDERING THROW",
-        heroSword: "HERO'S SKY-CLEAVING SLASH",
+        axe: weapon.name === "Astral Pendulum" ? "HEAVENLY DOWNFALL" : "THUNDERING THROW",
+        heroSword: weapon.heavenly ? "HEAVEN'S LADDER" : "HERO'S SKY-CLEAVING SLASH",
         lightningSpear: "TEMPEST OF A THOUSAND BOLTS",
-        monkeyHorn: "MONKEY STAMPEDE"
+        monkeyHorn: "MONKEY STAMPEDE",
+        combat: "GODLIKE FINISHER"
       };
       player.ultimateName = ultimateNames[weapon.type] || "ULTIMATE STRIKE";
-      player.ultimateColor = weapon.type === "lightningSpear" ? "#76edff" :
+      player.ultimateColor = weapon.heavenly || weapon.type === "combat" ? "#ffe58b" :
+        weapon.type === "lightningSpear" ? "#76edff" :
         weapon.type === "scythe" ? "#d7e0e8" :
           weapon.type === "axe" ? "#ffd070" :
             weapon.type === "monkeyHorn" ? "#f2c65d" : "#d59bff";
@@ -1857,6 +2134,32 @@
         updateHud();
         return;
       }
+      const namedUltimateDamage = {
+        "Cloud Whipper": 40,
+        "Angelic Sword": 45,
+        "Astral Pendulum": 55,
+        "Heavenly Hero's Sword (HHS)": 75,
+        Halos: 40
+      };
+      if (weapon.type === "combat") {
+        applyDamage((enemy) => Math.hypot(enemy.x - player.x, enemy.y - player.y) <= weapon.range * 2
+          ? weapon.ultimateDamage : 0, weapon.ultimateDamage);
+        updateHud();
+        return;
+      }
+      if (weapon.type === "kunai" || weapon.type === "bow") {
+        const damage = namedUltimateDamage[weapon.name] || weapon.damage * 3;
+        applyDamage((enemy) => getEnemyHit(enemy, weapon.range * 1.5, damage, 0.1), damage);
+        updateHud();
+        return;
+      }
+      if (weapon.name === "Cloud Whipper" || weapon.name === "Angelic Sword" ||
+          weapon.name === "Astral Pendulum" || weapon.name === "Heavenly Hero's Sword (HHS)") {
+        const damage = namedUltimateDamage[weapon.name];
+        applyDamage((enemy) => getEnemyHit(enemy, weapon.range * 2, damage, 0.1), damage);
+        updateHud();
+        return;
+      }
       const damage = weapon.damage * 3;
       if (weapon.type === "scythe") {
         applyDamage((enemy) => Math.hypot(enemy.x - player.x, enemy.y - player.y) <= 135 ? damage : 0, damage);
@@ -1865,6 +2168,17 @@
       } else if (weapon.type === "heroSword") {
         applyDamage((enemy) => getEnemyHit(enemy, 360, weapon.airDamage * 3, 0.2), weapon.airDamage * 3);
       }
+      updateHud();
+    }
+
+    function useCombatMove() {
+      if (!isPlaying || weapon.type !== "combat" || player.attackCooldown > 0) return;
+      player.attackCooldown = 0.8;
+      player.attackAnimation = 0.24;
+      player.ultimateName = "CELESTIAL STRIKE";
+      player.ultimateColor = "#ffe58b";
+      applyDamage((enemy) => getEnemyHit(enemy, weapon.range * 1.5, weapon.firstMoveDamage, 0.1),
+        weapon.firstMoveDamage);
       updateHud();
     }
 
@@ -1994,6 +2308,39 @@
           ctx.quadraticCurveTo(x + (leaf % 2 ? 20 : -20), y, x + (leaf % 2 ? 36 : -36), y + 3);
           ctx.stroke();
         }
+      } else if (sceneTheme === "heavenly") {
+        for (const island of [{ x: 90, y: 355, w: 230 }, { x: 470, y: 382, w: 300 }]) {
+          ctx.fillStyle = "#f3d982";
+          ctx.beginPath();
+          ctx.ellipse(island.x + island.w / 2, island.y, island.w / 2, 20, 0, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = "#d9b760";
+          ctx.beginPath();
+          ctx.moveTo(island.x + 25, island.y + 8);
+          ctx.lineTo(island.x + island.w - 24, island.y + 8);
+          ctx.lineTo(island.x + island.w / 2, island.y + 68);
+          ctx.closePath();
+          ctx.fill();
+          ctx.fillStyle = "#fff4c2";
+          ctx.fillRect(island.x + island.w / 2 - 28, island.y - 62, 56, 62);
+          ctx.fillRect(island.x + island.w / 2 - 38, island.y - 68, 76, 8);
+          ctx.beginPath();
+          ctx.moveTo(island.x + island.w / 2 - 28, island.y - 62);
+          ctx.lineTo(island.x + island.w / 2, island.y - 91);
+          ctx.lineTo(island.x + island.w / 2 + 28, island.y - 62);
+          ctx.closePath();
+          ctx.fill();
+        }
+        ctx.fillStyle = "#eed576";
+        ctx.fillRect(0, 420, canvas.width, 120);
+        ctx.fillStyle = "#fff0b0";
+        for (let sparkle = 0; sparkle < 20; sparkle++) {
+          const x = (sparkle * 79 + sceneTime * (sparkle % 2 ? 10 : -7) + 960) % 960;
+          const y = 340 + sparkle % 4 * 39 + Math.sin(sceneTime * 2 + sparkle) * 5;
+          ctx.beginPath();
+          ctx.arc(x, y, 2 + sparkle % 3, 0, Math.PI * 2);
+          ctx.fill();
+        }
       } else {
         const mountains = ctx.createLinearGradient(0, 245, 0, 405);
         mountains.addColorStop(0, "#8ea9c2");
@@ -2071,7 +2418,14 @@
         const y = (mote * 97 + Math.sin(sceneTime * 1.3 + mote * 2) * 22) % (canvas.height + 40) - 20;
         const pulse = 0.35 + (Math.sin(sceneTime * 2 + mote) + 1) * 0.25;
         ctx.globalAlpha = pulse;
-        if (stormy) {
+        if (sceneTheme === "heavenly") {
+          ctx.fillStyle = "#fff1a8";
+          ctx.shadowColor = "#fff1a8";
+          ctx.shadowBlur = 9;
+          ctx.beginPath();
+          ctx.arc(x, y, mote % 4 === 0 ? 2 : 1.2, 0, Math.PI * 2);
+          ctx.fill();
+        } else if (stormy) {
           ctx.fillStyle = mote % 3 ? "#96eaff" : "#ffe89a";
           ctx.shadowColor = ctx.fillStyle;
           ctx.shadowBlur = 9;
@@ -2146,14 +2500,14 @@
       ctx.restore();
     }
 
-    function drawScythe(scale = 1, rotation = 0) {
+    function drawScythe(scale = 1, rotation = 0, heavenly = false) {
       ctx.save();
       ctx.rotate(rotation);
       ctx.scale(scale, scale);
       const handle = ctx.createLinearGradient(-7, 0, 7, -100);
-      handle.addColorStop(0, "#292d32");
-      handle.addColorStop(0.45, "#737b83");
-      handle.addColorStop(1, "#343a40");
+      handle.addColorStop(0, heavenly ? "#8b6422" : "#292d32");
+      handle.addColorStop(0.45, heavenly ? "#ffe89a" : "#737b83");
+      handle.addColorStop(1, heavenly ? "#b1842e" : "#343a40");
       ctx.strokeStyle = handle;
       ctx.lineWidth = 9;
       ctx.lineCap = "round";
@@ -2171,11 +2525,11 @@
       ctx.stroke();
 
       const steel = ctx.createLinearGradient(4, -93, 110, -155);
-      steel.addColorStop(0, "#737d86");
-      steel.addColorStop(0.22, "#e1e7eb");
-      steel.addColorStop(0.55, "#aeb8c0");
-      steel.addColorStop(0.82, "#f7f9fa");
-      steel.addColorStop(1, "#78838c");
+      steel.addColorStop(0, heavenly ? "#c1902d" : "#737d86");
+      steel.addColorStop(0.22, heavenly ? "#fff6c8" : "#e1e7eb");
+      steel.addColorStop(0.55, heavenly ? "#e5bf56" : "#aeb8c0");
+      steel.addColorStop(0.82, heavenly ? "#fffdf0" : "#f7f9fa");
+      steel.addColorStop(1, heavenly ? "#ad7a20" : "#78838c");
       ctx.fillStyle = steel;
       ctx.beginPath();
       ctx.moveTo(0, -91);
@@ -2206,7 +2560,25 @@
       ctx.translate(x + (player.facingX >= 0 ? 10 : -10), y + 3);
       ctx.scale(player.facingX >= 0 ? 1 : -1, 1);
       ctx.lineCap = "round";
-      if (weapon.type === "whip") {
+      if (weapon.heavenly || weapon.type === "combat") {
+        ctx.shadowColor = "#ffe58b";
+        ctx.shadowBlur = 12;
+      }
+      if (weapon.name === "Cloud Whipper") {
+        ctx.strokeStyle = "#fff0a8";
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(16, 1);
+        ctx.bezierCurveTo(25, -12, 31, 10, 40, -2);
+        ctx.moveTo(16, 5);
+        ctx.bezierCurveTo(26, -3, 31, 19, 42, 8);
+        ctx.stroke();
+        ctx.fillStyle = "#fff8d9";
+        ctx.beginPath();
+        ctx.arc(40, -4, 5, 0, Math.PI * 2);
+        ctx.arc(43, 9, 5, 0, Math.PI * 2);
+        ctx.fill();
+      } else if (weapon.type === "whip") {
         ctx.strokeStyle = "#593b2b";
         ctx.lineWidth = 7;
         ctx.beginPath();
@@ -2289,7 +2661,7 @@
         ctx.restore();
       } else if (weapon.type === "scythe") {
         ctx.translate(9, 6);
-        drawScythe(0.28, 0.55);
+        drawScythe(0.28, 0.55, weapon.heavenly);
       } else if (weapon.type === "axe") {
         ctx.save();
         ctx.rotate(-0.45);
@@ -2355,6 +2727,23 @@
         ctx.closePath();
         ctx.fill();
         ctx.restore();
+      } else if (weapon.type === "kunai") {
+        ctx.strokeStyle = "#795333";
+        ctx.lineWidth = 5;
+        ctx.beginPath();
+        ctx.moveTo(-2, 8); ctx.lineTo(22, -16);
+        ctx.stroke();
+        ctx.fillStyle = weapon.heavenly ? "#ffe58b" : "#cbd8df";
+        ctx.beginPath();
+        ctx.moveTo(18, -13); ctx.lineTo(36, -30); ctx.lineTo(29, -7);
+        ctx.closePath();
+        ctx.fill();
+      } else if (weapon.type === "combat") {
+        ctx.fillStyle = "#f4c65e";
+        ctx.beginPath();
+        ctx.arc(2, 0, 9, 0, Math.PI * 2);
+        ctx.arc(18, -8, 8, 0, Math.PI * 2);
+        ctx.fill();
       }
       ctx.restore();
     }
@@ -2363,7 +2752,8 @@
       const direction = player.facingX >= 0 ? 1 : -1;
       const side = player.facingY < -0.25 ? -1 : 1;
       const reach = isUltimate ? 300 : weapon.range;
-      const color = isUltimate ? player.ultimateColor : "#eaf7ff";
+      const color = isUltimate ? player.ultimateColor :
+        weapon.heavenly || weapon.type === "combat" ? "#ffe58b" : "#eaf7ff";
       ctx.save();
       ctx.translate(player.x, player.y - 7);
       ctx.scale(direction, 1);
@@ -2443,6 +2833,25 @@
           ctx.strokeStyle = "#fff";
           ctx.lineWidth = 3;
           ctx.stroke();
+          if (weapon.name === "Heavenly Hero's Sword (HHS)") {
+            ctx.save();
+            ctx.globalAlpha = 0.85;
+            ctx.fillStyle = "#fff8d5";
+            ctx.strokeStyle = "#ffe58b";
+            ctx.shadowColor = "#fff1a8";
+            ctx.shadowBlur = 12;
+            for (let angel = 0; angel < 15; angel++) {
+              const x = -210 + angel * 30;
+              const y = -210 + (progress * 420 + angel * 31) % 330;
+              ctx.beginPath();
+              ctx.arc(x, y, 3, 0, Math.PI * 2);
+              ctx.fill();
+              ctx.beginPath();
+              ctx.moveTo(x - 7, y - 2); ctx.lineTo(x, y - 6); ctx.lineTo(x + 7, y - 2);
+              ctx.stroke();
+            }
+            ctx.restore();
+          }
         } else if (weapon.type === "heroSword") {
           ctx.globalAlpha *= 0.85;
           ctx.shadowColor = "#6feaff";
@@ -2463,7 +2872,7 @@
       } else if (weapon.type === "scythe") {
         const sweep = progress * (isUltimate ? Math.PI * 2.4 : 2);
         const direction = player.facingY < -0.25 ? -1 : 1;
-        drawScythe(isUltimate ? 1.15 : 0.85, -1.1 + sweep * direction);
+        drawScythe(isUltimate ? 1.15 : 0.85, -1.1 + sweep * direction, weapon.heavenly);
         if (isUltimate) {
           ctx.globalAlpha *= 0.42;
           ctx.strokeStyle = "#d5dde3";
@@ -2579,6 +2988,24 @@
             ctx.fill();
           }
         }
+      } else if (weapon.type === "kunai") {
+        ctx.strokeStyle = color;
+        ctx.lineWidth = isUltimate ? 8 : 4;
+        for (let halo = 0; halo < (isUltimate ? 8 : 1); halo++) {
+          ctx.save();
+          ctx.rotate(halo * Math.PI / 4 + progress * 0.5);
+          ctx.beginPath();
+          ctx.arc(30 + halo * 12, 0, 12, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.restore();
+        }
+      } else if (weapon.type === "combat") {
+        ctx.strokeStyle = color;
+        ctx.lineWidth = isUltimate ? 14 : 8;
+        ctx.beginPath();
+        ctx.arc(58 + Math.sin(progress * Math.PI) * 55, -4, isUltimate ? 120 : 42,
+          -0.85, 0.85);
+        ctx.stroke();
       }
       ctx.restore();
     }
@@ -2680,6 +3107,41 @@
       }
     }
 
+    function drawMotionTrails() {
+      for (const trail of motionTrails) {
+        ctx.save();
+        ctx.globalAlpha = trail.life / 0.22 * 0.34;
+        ctx.strokeStyle = trail.color;
+        ctx.shadowColor = trail.color;
+        ctx.shadowBlur = 12;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.ellipse(trail.x, trail.y, 14, 4, 0, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.restore();
+      }
+    }
+
+    function drawCombatParticles() {
+      for (const particle of combatParticles) {
+        ctx.save();
+        ctx.globalAlpha = particle.life / particle.maxLife;
+        ctx.translate(particle.x, particle.y);
+        ctx.rotate(Math.atan2(particle.vy, particle.vx));
+        ctx.fillStyle = particle.color;
+        ctx.shadowColor = particle.color;
+        ctx.shadowBlur = 10;
+        ctx.beginPath();
+        ctx.moveTo(particle.size, 0);
+        ctx.lineTo(0, particle.size * 0.55);
+        ctx.lineTo(-particle.size, 0);
+        ctx.lineTo(0, -particle.size * 0.55);
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
+      }
+    }
+
     function updateHealthDrop(delta) {
       healthDropTimer -= delta;
       if (healthDropTimer <= 0) {
@@ -2764,6 +3226,23 @@
       ctx.beginPath();
       ctx.ellipse(0, 22, 19, 6, 0, 0, Math.PI * 2);
       ctx.fill();
+      if (weapon.heavenly || weapon.type === "combat") {
+        ctx.save();
+        ctx.translate(0, -6);
+        ctx.strokeStyle = "#ffe58b";
+        ctx.shadowColor = "#fff0aa";
+        ctx.shadowBlur = 16;
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.arc(0, -25, 23 + Math.sin(sceneTime * 3) * 2, Math.PI, Math.PI * 2);
+        ctx.stroke();
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.moveTo(-13, -2); ctx.quadraticCurveTo(-40, -20, -32, 6);
+        ctx.moveTo(13, -2); ctx.quadraticCurveTo(40, -20, 32, 6);
+        ctx.stroke();
+        ctx.restore();
+      }
       if (player.ultimateCharge >= 100 && weapon.rarity !== "Common") {
         const auraColor = weapon.type === "lightningSpear" ? "#76edff" :
           weapon.type === "scythe" ? "#d7e0e8" :
@@ -2936,7 +3415,9 @@
       const isBunnyBoss = enemy.type === "boss";
       const isLightningBoss = enemy.type === "lightningBoss";
       const isGorillaBoss = enemy.type === "gorillaEmperor";
-      const isBoss = isBunnyBoss || isLightningBoss || isGorillaBoss;
+      const isHeavenlyEnemy = ["heavenlyBow", "heavenlyScythe", "heavenlyHero", "dojoMaster"].includes(enemy.type);
+      const isHeavenlyBoss = enemy.type === "heavenlyHero" || enemy.type === "dojoMaster";
+      const isBoss = isBunnyBoss || isLightningBoss || isGorillaBoss || isHeavenlyBoss;
       const isLightningEnemy = ["fighter", "guard", "lightningBoss"].includes(enemy.type);
       const isGorillaEnemy = ["monkey", "gorilla", "armoredGorilla", "gorillaEmperor"].includes(enemy.type);
       const scale = isBoss ? 2 : enemy.type === "guard" || enemy.type === "armoredGorilla" ? 1.35 :
@@ -2946,7 +3427,8 @@
       const hop = enemy.dying ? 0 : Math.abs(Math.sin(animation * 0.55)) * (isBoss ? 3 : 2);
       const sink = enemy.dying ? Math.max(0, Math.min(1, (enemy.deathTimer - 1) / 2.8)) : 0;
       if (isBoss && !enemy.dying) {
-        const auraColor = isLightningBoss ? "#77eaff" : isGorillaBoss ? "#d5b44e" : "#e5a5ff";
+        const auraColor = isHeavenlyBoss ? "#ffe58b" :
+          isLightningBoss ? "#77eaff" : isGorillaBoss ? "#d5b44e" : "#e5a5ff";
         const auraRadius = 70 + Math.sin(animation * 0.7) * 7;
         const aura = ctx.createRadialGradient(enemy.x, enemy.y - 7, 5, enemy.x, enemy.y - 7, auraRadius);
         aura.addColorStop(0, "transparent");
@@ -3002,7 +3484,56 @@
         : 0;
       ctx.translate(enemy.x + shake, enemy.y + sink * 30 - hop);
       ctx.scale(scale * facing, scale * (1 + Math.sin(animation * 0.55) * 0.025));
-      if (isLightningEnemy) {
+      if (isHeavenlyEnemy) {
+        const armor = ctx.createLinearGradient(-18, -30, 18, 18);
+        armor.addColorStop(0, "#fff8c6");
+        armor.addColorStop(0.52, isHeavenlyBoss ? "#f5c84f" : "#e8d17d");
+        armor.addColorStop(1, isHeavenlyBoss ? "#a66b19" : "#a4863f");
+        ctx.fillStyle = armor;
+        ctx.shadowColor = "#ffe58b";
+        ctx.shadowBlur = isHeavenlyBoss ? 24 : 14;
+        ctx.beginPath();
+        ctx.ellipse(0, 0, 17, 18, 0, 0, Math.PI * 2);
+        ctx.arc(0, -20, 12, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = "#fff";
+        ctx.beginPath();
+        ctx.ellipse(-5, -23, 2.5, 3.5, 0, 0, Math.PI * 2);
+        ctx.ellipse(5, -23, 2.5, 3.5, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = "#fff1ad";
+        ctx.lineWidth = 5;
+        ctx.beginPath();
+        ctx.moveTo(-12, -9); ctx.quadraticCurveTo(-39, -22, -32, 5);
+        ctx.moveTo(12, -9); ctx.quadraticCurveTo(39, -22, 32, 5);
+        ctx.stroke();
+        ctx.strokeStyle = "#fffdf1";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(-13, -7); ctx.lineTo(-27, -2); ctx.lineTo(-17, 1);
+        ctx.moveTo(13, -7); ctx.lineTo(27, -2); ctx.lineTo(17, 1);
+        ctx.stroke();
+        ctx.strokeStyle = "#fff5c3";
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.arc(0, -37, 12, Math.PI, Math.PI * 2);
+        ctx.stroke();
+        if (enemy.type === "heavenlyScythe") drawScythe(0.42, 0, true);
+        else {
+          ctx.strokeStyle = "#bd8a2c";
+          ctx.lineWidth = enemy.type === "heavenlyBow" ? 3 : 6;
+          ctx.beginPath();
+          if (enemy.type === "heavenlyBow") {
+            ctx.arc(22, -7, 17, -1.1, 1.1);
+            ctx.moveTo(22, -24); ctx.lineTo(22, 10);
+          } else {
+            ctx.moveTo(14, 11); ctx.lineTo(37, -36);
+            ctx.moveTo(29, -29); ctx.lineTo(42, -41);
+          }
+          ctx.stroke();
+        }
+      } else if (isLightningEnemy) {
         const armor = ctx.createLinearGradient(-18, -30, 18, 18);
         if (enemy.type === "lightningBoss") {
           armor.addColorStop(0, "#a18df2");
@@ -3178,8 +3709,8 @@
         ctx.fill();
         const health = Math.max(0, enemy.health / enemy.maxHealth);
         const barGradient = ctx.createLinearGradient(0, barY, 0, barY + barHeight);
-        barGradient.addColorStop(0, isLightningEnemy ? "#a4f6ff" : "#ff9ba7");
-        barGradient.addColorStop(1, isLightningEnemy ? "#42b7e5" : "#e84370");
+        barGradient.addColorStop(0, isHeavenlyEnemy ? "#fff3aa" : isLightningEnemy ? "#a4f6ff" : "#ff9ba7");
+        barGradient.addColorStop(1, isHeavenlyEnemy ? "#d79621" : isLightningEnemy ? "#42b7e5" : "#e84370");
         ctx.fillStyle = barGradient;
         ctx.beginPath();
         ctx.roundRect(enemy.x - barWidth / 2, barY, barWidth * health, barHeight, barHeight);
@@ -3200,14 +3731,26 @@
         }
       }
       if (isBoss) {
-        const label = isLightningBoss ? "Lightning Queen" : isGorillaBoss ? "Gorilla Emperor" : "Bunny Boss";
+        const label = isHeavenlyBoss
+          ? enemy.type === "dojoMaster" ? "Heavenly Dojo Master" : "Heavenly Hero"
+          : isLightningBoss ? "Lightning Queen" : isGorillaBoss ? "Gorilla Emperor" : "Bunny Boss";
         ctx.textAlign = "center";
         ctx.font = "bold 16px system-ui";
         ctx.lineWidth = 3;
         ctx.strokeStyle = "white";
         ctx.strokeText(label, enemy.x, barY - 8);
-        ctx.fillStyle = isLightningBoss ? "#28285c" : isGorillaBoss ? "#614614" : "#462e52";
+        ctx.fillStyle = isHeavenlyBoss ? "#80531b" :
+          isLightningBoss ? "#28285c" : isGorillaBoss ? "#614614" : "#462e52";
         ctx.fillText(label, enemy.x, barY - 8);
+      } else if (isHeavenlyEnemy) {
+        const label = enemy.type === "heavenlyBow" ? "Heavenly Bow and Arrow" : "Heavenly Scythe Wielder";
+        ctx.textAlign = "center";
+        ctx.font = "bold 12px system-ui";
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = "white";
+        ctx.strokeText(label, enemy.x, barY - 5);
+        ctx.fillStyle = "#775417";
+        ctx.fillText(label, enemy.x, barY - 5);
       } else if (isLightningEnemy) {
         const label = enemy.type === "guard" ? "Lightning Guard" : "Lightning Fighter";
         ctx.textAlign = "center";
@@ -3261,11 +3804,12 @@
         const shake = cameraShake * 14;
         ctx.translate(Math.sin(lastFrame * 0.043) * shake, Math.cos(lastFrame * 0.057) * shake * 0.55);
       }
+      const heavenly = sceneTheme === "heavenly";
       const sky = ctx.createLinearGradient(0, 0, 0, 540);
-      sky.addColorStop(0, stormy ? "#202b4a" : "#68c5f3");
-      sky.addColorStop(0.65, stormy ? "#65718c" : "#b8e9ff");
-      sky.addColorStop(0.651, stormy ? "#53646b" : "#82cf63");
-      sky.addColorStop(1, stormy ? "#334e42" : "#55a942");
+      sky.addColorStop(0, stormy ? "#202b4a" : heavenly ? "#76cfff" : "#68c5f3");
+      sky.addColorStop(0.65, stormy ? "#65718c" : heavenly ? "#fff2c7" : "#b8e9ff");
+      sky.addColorStop(0.651, stormy ? "#53646b" : heavenly ? "#f5d875" : "#82cf63");
+      sky.addColorStop(1, stormy ? "#334e42" : heavenly ? "#d2a848" : "#55a942");
       ctx.fillStyle = sky;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       if (stormy && stormFlashTimer > 0) {
@@ -3302,14 +3846,15 @@
         cloud.x += cloud.speed * delta;
         if (cloud.x > canvas.width + 70) cloud.x = -70;
         const cloudY = cloud.y + Math.sin(sceneTime * 0.7 + cloud.x * 0.01) * 2.5;
-        drawCloud(cloud.x, cloudY, cloud.size, stormy ? "#59647b" : "#fff");
+        drawCloud(cloud.x, cloudY, cloud.size, stormy ? "#59647b" : heavenly ? "#fff5d5" : "#fff");
       }
       drawBackdrop(stormy, delta);
-      ctx.fillStyle = stormy ? "#405a48" : "#6dbd50";
+      ctx.fillStyle = stormy ? "#405a48" : heavenly ? "#e5c15d" : "#6dbd50";
       for (let x = 20; x < canvas.width; x += 38) {
         const y = 425 + (x * 17 % 75);
         const sway = Math.sin(sceneTime * 2.1 + x * 0.08) * 3;
-        ctx.strokeStyle = stormy ? "#98b49b" : x % 4 === 0 ? "#a4db70" : "#4e9e56";
+        ctx.strokeStyle = stormy ? "#98b49b" : heavenly ? "#fff0a6" :
+          x % 4 === 0 ? "#a4db70" : "#4e9e56";
         ctx.lineWidth = 2;
         ctx.beginPath();
         ctx.moveTo(x, y + 7);
@@ -3318,6 +3863,7 @@
         ctx.quadraticCurveTo(x + 4 - sway * 0.3, y + 3, x + 3 - sway, y);
         ctx.stroke();
       }
+      drawMotionTrails();
       if (!airshipPopup.hidden) drawAirship();
       if (isPlaying || gameEnded || wavePopup.hidden === false || bossDeathActive) {
         for (const enemy of enemies) drawEnemy(enemy);
@@ -3331,18 +3877,18 @@
         if (projectile.type === "heroSlash") {
           ctx.rotate(Math.sin(projectile.phase) * 0.08);
           ctx.globalAlpha = Math.min(1, projectile.life * 2);
-          ctx.shadowColor = "#62eaff";
+          ctx.shadowColor = projectile.heavenly ? "#ffe58b" : "#62eaff";
           ctx.shadowBlur = 24;
-          ctx.strokeStyle = "#91f3ff";
+          ctx.strokeStyle = projectile.heavenly ? "#ffe58b" : "#91f3ff";
           ctx.lineWidth = 5;
           ctx.beginPath();
           ctx.moveTo(-62, 9);
           ctx.bezierCurveTo(-38, -20, -14, -25, 4, -15);
           ctx.stroke();
           const slashGradient = ctx.createLinearGradient(-34, 20, 42, -18);
-          slashGradient.addColorStop(0, "#75dfff");
+          slashGradient.addColorStop(0, projectile.heavenly ? "#e5b83f" : "#75dfff");
           slashGradient.addColorStop(0.48, "#ffffff");
-          slashGradient.addColorStop(1, "#a792ff");
+          slashGradient.addColorStop(1, projectile.heavenly ? "#fff3b2" : "#a792ff");
           ctx.fillStyle = slashGradient;
           ctx.beginPath();
           ctx.moveTo(-35, 14);
@@ -3359,10 +3905,21 @@
           ctx.moveTo(-26, 13);
           ctx.quadraticCurveTo(-3, -15, 34, -12);
           ctx.stroke();
+          if (projectile.heavenly) {
+            ctx.strokeStyle = "#fff6c8";
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(-8, -8); ctx.quadraticCurveTo(-18, -28, -35, -24);
+            ctx.moveTo(-8, -8); ctx.quadraticCurveTo(-22, 8, -39, 3);
+            ctx.moveTo(12, -9); ctx.quadraticCurveTo(22, -29, 39, -25);
+            ctx.moveTo(12, -9); ctx.quadraticCurveTo(26, 7, 43, 2);
+            ctx.stroke();
+          }
           ctx.restore();
           continue;
         }
-        ctx.fillStyle = projectile.type === "arrow" ? "#68452d" :
+        ctx.fillStyle = projectile.heavenly || projectile.type === "heavenlyArrow" || projectile.type === "kunai" ? "#ffe58b" :
+          projectile.type === "arrow" ? "#68452d" :
           projectile.type === "lightning" ? "#66ecff" : "#ee8d32";
         if (projectile.type === "lightning") {
           ctx.strokeStyle = "#fff27a";
@@ -3373,9 +3930,16 @@
           ctx.moveTo(-12, -8); ctx.lineTo(-2, 0); ctx.lineTo(-10, 9);
           ctx.lineTo(9, -2); ctx.lineTo(2, 7); ctx.lineTo(13, 0);
           ctx.stroke();
-        } else if (projectile.type === "arrow") {
+        } else if (projectile.type === "arrow" || projectile.type === "heavenlyArrow" || projectile.type === "kunai") {
           ctx.fillRect(-12, -2, 24, 4);
           ctx.beginPath(); ctx.moveTo(12, 0); ctx.lineTo(5, -5); ctx.lineTo(5, 5); ctx.fill();
+          if (projectile.heavenly || projectile.type === "heavenlyArrow" || projectile.type === "kunai") {
+            ctx.strokeStyle = "#fff9d8";
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(0, 0, 7, 0, Math.PI * 2);
+            ctx.stroke();
+          }
         } else {
           ctx.beginPath();
           ctx.moveTo(-9, 0); ctx.lineTo(8, -5); ctx.lineTo(3, 6); ctx.closePath(); ctx.fill();
@@ -3388,6 +3952,7 @@
       }
       drawHealthDrop();
       drawImpactEffects();
+      drawCombatParticles();
       drawAtmosphere(stormy);
       ctx.restore();
       drawCinematicOverlay();
@@ -3401,7 +3966,8 @@
       updateHud();
       if (!player.health) {
         finishGame(chapter === 2 ? "The lightning fighters defeated you!" :
-          chapter === 3 ? "The Gorilla Emperor's army defeated you!" : "The evil bunnies got you!",
+          chapter === 3 ? "The Gorilla Emperor's army defeated you!" :
+            chapter >= 4 ? "The heavenly fighters defeated you!" : "The evil bunnies got you!",
         "lose", chapter === 3 && wave === 3 ? "\"Ha i knew you werent strong\"" : "");
       }
     }
@@ -3409,37 +3975,46 @@
     function updateEnemies(delta) {
       for (const enemy of enemies) {
         enemy.animationTime = (enemy.animationTime || 0) +
-          delta * (["boss", "lightningBoss", "gorillaEmperor"].includes(enemy.type) ? 7 : 10);
+          delta * (["boss", "lightningBoss", "gorillaEmperor", "heavenlyHero", "dojoMaster"].includes(enemy.type) ? 7 : 10);
         enemy.hitFlash = Math.max(0, (enemy.hitFlash || 0) - delta);
         const dx = player.x - enemy.x;
         const dy = player.y - enemy.y;
         const distance = Math.hypot(dx, dy) || 1;
         enemy.facing = dx >= 0 ? 1 : -1;
-        const isRanged = ["boss", "fighter", "lightningBoss"].includes(enemy.type);
+        const isRanged = ["boss", "fighter", "lightningBoss", "heavenlyBow", "dojoMaster"].includes(enemy.type);
         const speed = isRanged ? 28 : enemy.type === "big" ? 38 :
           enemy.type === "armoredGorilla" || enemy.type === "gorillaEmperor" ? 30 :
             enemy.type === "gorilla" ? 36 : 48;
-        if (distance > 28) {
+        const keepDistance = enemy.type === "dojoMaster" ? 140 : 28;
+        if (distance > keepDistance) {
           enemy.x += dx / distance * speed * delta;
           enemy.y = Math.max(391, enemy.y + dy / distance * speed * delta);
         }
-        if (["boss", "fighter", "lightningBoss"].includes(enemy.type)) {
+        if (["boss", "fighter", "lightningBoss", "heavenlyBow", "dojoMaster"].includes(enemy.type)) {
           enemy.attackTimer -= delta;
+          if (enemy.type === "dojoMaster") enemy.ultimateTimer -= delta;
           if (enemy.attackTimer <= 0) {
             const aimX = player.x - enemy.x;
             const aimY = player.y - enemy.y;
             const aimLength = Math.hypot(aimX, aimY) || 1;
             const isLightning = enemy.type === "fighter" || enemy.type === "lightningBoss";
+            const isDojoUltimate = enemy.type === "dojoMaster" && enemy.ultimateTimer <= 0;
             projectiles.push({
               x: enemy.x, y: enemy.y - 15,
-              vx: aimX / aimLength * (isLightning ? 155 : 145),
-              vy: aimY / aimLength * (isLightning ? 155 : 145),
-              damage: isLightning ? enemy.attackDamage : 20,
-              type: isLightning ? "lightning" : "carrot",
+              vx: aimX / aimLength * (isLightning ? 155 : enemy.type === "heavenlyBow" ? 190 : 145),
+              vy: aimY / aimLength * (isLightning ? 155 : enemy.type === "heavenlyBow" ? 190 : 145),
+              damage: enemy.type === "dojoMaster" ? isDojoUltimate ? 85 : 75 :
+                isLightning || enemy.type === "heavenlyBow" ? enemy.attackDamage : 20,
+              type: enemy.type === "heavenlyBow" || enemy.type === "dojoMaster"
+                ? "heavenlyArrow" : isLightning ? "lightning" : "carrot",
               life: 4
             });
-            enemy.attackTimer = enemy.type === "lightningBoss" ? 2.2 : 2.5;
+            enemy.attackTimer = enemy.type === "lightningBoss" ? 2.2 :
+              enemy.type === "heavenlyBow" ? 1.8 : enemy.type === "dojoMaster" ? 2.8 : 2.5;
+            if (isDojoUltimate) enemy.ultimateTimer = 8;
           }
+          if (enemy.type === "dojoMaster" && distance < 30) takeHit(enemy.attackDamage);
+          if (gameEnded) return;
         } else if (enemy.type === "gorillaEmperor") {
           enemy.hornTimer -= delta;
           if (enemy.hornTimer <= 0) {
@@ -3507,7 +4082,8 @@
           const target = enemies.find((enemy) => enemy.health > 0 && !enemy.dying &&
             !projectile.hitEnemies.has(enemy) &&
             Math.hypot(enemy.x - projectile.x, enemy.y - projectile.y) <
-              (["boss", "lightningBoss", "gorillaEmperor"].includes(enemy.type) ? 52 : enemy.type === "guard" ? 36 : 30));
+              (["boss", "lightningBoss", "gorillaEmperor", "heavenlyHero", "dojoMaster"].includes(enemy.type)
+                ? 52 : enemy.type === "guard" ? 36 : 30));
           if (target) {
             projectile.hitEnemies.add(target);
             defeatEnemy(target, projectile.damage);
@@ -3517,9 +4093,10 @@
             updateHud();
             if (!isPlaying) return false;
           }
-        } else if (projectile.type === "arrow") {
+        } else if (projectile.type === "arrow" || projectile.type === "kunai") {
           const target = enemies.find((enemy) => Math.hypot(enemy.x - projectile.x, enemy.y - projectile.y) <
-            (["boss", "lightningBoss", "gorillaEmperor"].includes(enemy.type) ? 48 : 26));
+            (["boss", "lightningBoss", "gorillaEmperor", "heavenlyHero", "dojoMaster"].includes(enemy.type)
+              ? 48 : 26));
           if (target) {
             defeatEnemy(target, projectile.damage);
             enemies = enemies.filter((enemy) => enemy.health > 0 || enemy.dying);
@@ -3571,6 +4148,18 @@
         impact.life -= delta;
         return impact.life > 0;
       });
+      combatParticles = combatParticles.filter((particle) => {
+        particle.life -= delta;
+        particle.x += particle.vx * delta;
+        particle.y += particle.vy * delta;
+        particle.vy += 110 * delta;
+        return particle.life > 0;
+      });
+      motionTrails = motionTrails.filter((trail) => {
+        trail.life -= delta;
+        return trail.life > 0;
+      });
+      motionTrailTimer = Math.max(0, motionTrailTimer - delta);
       if (sceneTheme === "storm") {
         stormFlashTimer = Math.max(0, stormFlashTimer - delta);
         nextStormFlash -= delta;
@@ -3591,6 +4180,18 @@
         const length = Math.hypot(dx, dy) || 1;
         player.moving = Boolean(dx || dy);
         player.animationTime += delta * (player.moving ? 13 : 2.4);
+        if (player.moving && motionTrailTimer <= 0) {
+          motionTrails.push({
+            x: player.x,
+            y: player.y + 16,
+            life: 0.22,
+            color: getWeaponEffectColor()
+          });
+          if (motionTrails.length > 12) motionTrails.shift();
+          motionTrailTimer = 0.045;
+        } else if (!player.moving) {
+          motionTrailTimer = 0;
+        }
         if (dx || dy) {
           player.facingX = dx / length;
           player.facingY = dy / length;
@@ -3609,7 +4210,8 @@
 
     function startWave(number, refillHealth = false) {
       wave = number;
-      sceneTheme = chapter === 2 ? "storm" : chapter === 3 ? "jungle" : "meadow";
+      sceneTheme = chapter === 2 ? "storm" : chapter === 3 ? "jungle" :
+        chapter >= 4 ? "heavenly" : "meadow";
       enemies = createWaveEnemies(wave);
       alliedMonkeys = [];
       projectiles = [];
@@ -3621,8 +4223,9 @@
       player.hitCooldown = 0;
       isPlaying = true;
       gameEnded = false;
-      setMusicScene(wave === 3 ? "boss" : "wave");
-      saveProgress(chapter === 2 ? "lightning" : chapter === 3 ? "gorilla" : "story", wave);
+      setMusicScene(wave === 3 || chapter === 5 ? "boss" : "wave");
+      saveProgress(chapter === 2 ? "lightning" : chapter === 3 ? "gorilla" :
+        chapter >= 4 ? "heavenly" : "story", wave);
       updateHud();
       gorillaIntroPopup.hidden = !(chapter === 3 && wave === 3);
       if (!gorillaIntroPopup.hidden) isPlaying = false;
@@ -3679,6 +4282,7 @@
         Whip: "A long, cracking lash reaches enemies from far away.",
         Sword: "A quick, curved sword slash hits nearby enemies.",
         "Bow and Arrow": "Shoots a fast arrow straight ahead.",
+        Kunai: "Throws a sharp kunai straight ahead.",
         "Base Scythe": "Sweeps a crescent blade through nearby enemies; its ultimate spins in a circle.",
         "Double-Sided Axe": "Chops forward with both axe blades; its ultimate throws the axe.",
         "Hero's Sword": "A sword slash hits close enemies and launches a flying blue air slash through enemies.",
@@ -3893,8 +4497,21 @@
     });
     restartButton.addEventListener("click", () => {
       gameEndPopup.hidden = true;
-      if (savedGame) loadSavedGame();
+      heavenlyChoicePopup.hidden = true;
+      if (heavenlyGateUnlocked &&
+          ((chapter === 2 && wave === 3) || (chapter === 4 && wave === 3) ||
+            (chapter === 5 && godlikeCombatUnlocked))) {
+        openHeavenlyChoice();
+      } else if (savedGame) loadSavedGame();
       else startWave(wave, true);
+    });
+    enterHeavenlyArenaButton.addEventListener("click", () => enterHeavenlyDestination(4));
+    enterHeavenlyDojoButton.addEventListener("click", () => enterHeavenlyDestination(5));
+    heavenlyMenuButton.addEventListener("click", () => {
+      heavenlyChoicePopup.hidden = true;
+      mainMenu.hidden = false;
+      selectedMapStage = 10;
+      updateWorldMap();
     });
     nameInput.addEventListener("input", () => nameInput.setCustomValidity(""));
     document.addEventListener("keydown", (event) => {
@@ -3903,6 +4520,10 @@
       if (event.code === "Space" && isPlaying) {
         event.preventDefault();
         if (!event.repeat) attack();
+      }
+      if (key === "q" && isPlaying) {
+        event.preventDefault();
+        useCombatMove();
       }
       if (key === "r" && isPlaying) {
         event.preventDefault();
