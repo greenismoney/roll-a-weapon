@@ -455,8 +455,16 @@
       color: #20172a;
       box-shadow: 0 0 18px #f2c65d99;
     }
+    .mobile-control-help {
+      display: none;
+      margin: 8px 0 0;
+      color: #42637a;
+      font-size: 12px;
+      text-align: center;
+    }
     @media (pointer: coarse), (any-pointer: coarse), (max-width: 900px) {
       .mobile-controls { display: grid; }
+      .mobile-control-help { display: block; }
     }
     @media (max-width: 520px) {
       body { padding: 12px; }
@@ -731,6 +739,7 @@
       <button type="button" data-direction="right" aria-label="Move right">▶</button>
       <button type="button" data-shoot aria-label="Shoot or attack">SHOOT</button>
     </div>
+    <p class="mobile-control-help">Tap the game screen or SHOOT to attack. ULTIMATE is beside ◀.</p>
     <p class="instructions" id="playHelp" hidden>Move with W, A, S, D or the arrow keys. Tap the game screen or press Space to attack. Tap Ultimate when its charge reaches 100. Godlike Combat uses Q for its first move and R for its ultimate.</p>
   </main>
 
