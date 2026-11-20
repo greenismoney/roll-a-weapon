@@ -13,7 +13,7 @@ jobs:
 
       - name: Download Butler
         run: |
-          curl -L -o butler.zip https://broth.itch.zone/butler/linux-amd64/1.24.3/butler.zip
+          curl -L -o butler.zip https://github.com/itchio/butler/releases/latest/download/butler-linux-amd64.zip
           unzip butler.zip
           chmod +x butler
 
