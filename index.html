@@ -449,8 +449,9 @@
     }
     .mobile-actions [data-ultimate] {
       border: 2px solid #d69bff;
-      background: #5d456f;
-      opacity: 0.55;
+      color: white;
+      background: linear-gradient(135deg, #76548f, #49345f);
+      opacity: 0.9;
     }
     .mobile-actions [data-ultimate].ready {
       opacity: 1;
@@ -458,7 +459,9 @@
       color: #20172a;
       box-shadow: 0 0 18px #f2c65d99;
     }
-    @media (pointer: coarse) { .mobile-controls { display: flex; } }
+    @media (pointer: coarse), (any-pointer: coarse), (max-width: 900px) {
+      .mobile-controls { display: flex; }
+    }
     @media (max-width: 520px) { body { padding: 12px; } }
   </style>
 </head>
