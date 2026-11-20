@@ -418,15 +418,47 @@
 
     .mobile-controls {
       display: none;
-      grid-template-columns: repeat(3, 54px);
       justify-content: center;
-      gap: 6px;
+      align-items: flex-end;
+      gap: 18px;
       margin-top: 12px;
     }
 
+    .mobile-dpad {
+      display: grid;
+      grid-template-columns: repeat(3, 54px);
+      gap: 6px;
+    }
+
+    .mobile-actions {
+      display: grid;
+      grid-template-columns: repeat(1, 82px);
+      gap: 8px;
+    }
+
     .mobile-controls button { touch-action: none; }
-    .mobile-controls [data-attack] { grid-column: 1 / -1; }
-    @media (pointer: coarse) { .mobile-controls { display: grid; } }
+    .mobile-actions button {
+      min-height: 54px;
+      padding: 8px;
+      font-size: 12px;
+      font-weight: 800;
+    }
+    .mobile-actions [data-shoot] {
+      background: linear-gradient(135deg, #dc4f61, #9d3049);
+      border-radius: 50%;
+    }
+    .mobile-actions [data-ultimate] {
+      border: 2px solid #d69bff;
+      background: #5d456f;
+      opacity: 0.55;
+    }
+    .mobile-actions [data-ultimate].ready {
+      opacity: 1;
+      background: linear-gradient(135deg, #f2c65d, #b86e32);
+      color: #20172a;
+      box-shadow: 0 0 18px #f2c65d99;
+    }
+    @media (pointer: coarse) { .mobile-controls { display: flex; } }
     @media (max-width: 520px) { body { padding: 12px; } }
   </style>
 </head>
@@ -689,13 +721,18 @@
       </div>
     </section>
     <div class="mobile-controls" aria-label="Movement controls">
-      <span></span><button type="button" data-direction="up" aria-label="Move up">▲</button><span></span>
-      <button type="button" data-direction="left" aria-label="Move left">◀</button>
-      <button type="button" data-direction="down" aria-label="Move down">▼</button>
-      <button type="button" data-direction="right" aria-label="Move right">▶</button>
-      <button type="button" data-attack>Attack</button>
+      <div class="mobile-dpad" aria-label="Movement controls">
+        <span></span><button type="button" data-direction="up" aria-label="Move up">▲</button><span></span>
+        <button type="button" data-direction="left" aria-label="Move left">◀</button>
+        <button type="button" data-direction="down" aria-label="Move down">▼</button>
+        <button type="button" data-direction="right" aria-label="Move right">▶</button>
+      </div>
+      <div class="mobile-actions" aria-label="Combat controls">
+        <button type="button" data-shoot aria-label="Shoot or attack">SHOOT</button>
+        <button type="button" data-ultimate aria-label="Use ultimate">ULTIMATE</button>
+      </div>
     </div>
-    <p class="instructions" id="playHelp" hidden>Move with W, A, S, D or the arrow keys. Press Space (or tap Attack) to attack. Godlike Combat uses Q for its first move and R for its ultimate.</p>
+    <p class="instructions" id="playHelp" hidden>Move with W, A, S, D or the arrow keys. Press Space (or tap Shoot) to attack. Tap Ultimate when its charge reaches 100. Godlike Combat uses Q for its first move and R for its ultimate.</p>
   </main>
 
   <script>
@@ -776,6 +813,8 @@
     const shardsText = document.querySelector("#shardsText");
     const weaponText = document.querySelector("#weaponText");
     const ultimateText = document.querySelector("#ultimateText");
+    const mobileShootButton = document.querySelector("[data-shoot]");
+    const mobileUltimateButton = document.querySelector("[data-ultimate]");
     const playHelp = document.querySelector("#playHelp");
     const heldKeys = new Set();
     const player = {
@@ -1840,6 +1879,11 @@
       ultimateText.textContent = weapon.rarity === "Common"
         ? "Ultimate: unavailable for Common weapons"
         : `Ultimate: ${Math.floor(player.ultimateCharge)} / 100 damage (R)`;
+      const ultimateReady = weapon.rarity !== "Common" && player.ultimateCharge >= 100;
+      mobileUltimateButton.classList.toggle("ready", ultimateReady);
+      mobileUltimateButton.setAttribute("aria-label", ultimateReady
+        ? "Use ultimate, ready"
+        : "Use ultimate, not ready");
       shopCoins.textContent = `Coins: ${coins}`;
       const healthUpgradeCost = 5 + healthUpgradeCount * 10;
       buyHealthButton.textContent = `Upgrade health (+10) — ${healthUpgradeCost} coins`;
@@ -4548,7 +4592,8 @@
         button.addEventListener(type, () => heldKeys.delete(key));
       }
     }
-    document.querySelector("[data-attack]").addEventListener("click", attack);
+    mobileShootButton.addEventListener("click", attack);
+    mobileUltimateButton.addEventListener("click", useUltimate);
     updateHud();
     updateMusicButton();
     showAccountScreen();
