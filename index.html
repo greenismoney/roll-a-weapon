@@ -2772,6 +2772,95 @@
       ctx.restore();
     }
 
+    function drawFeatheredWings(animation, spread = 1, heavenly = false) {
+      ctx.save();
+      ctx.translate(0, -6);
+      ctx.globalAlpha *= 0.9;
+      const feather = heavenly ? "#fff9e7" : "#f2f8ff";
+      const shadow = heavenly ? "#d9b95d" : "#83c9e8";
+      for (const side of [-1, 1]) {
+        ctx.save();
+        ctx.scale(side * spread, 1);
+        ctx.rotate(side * Math.sin(animation * 1.7) * 0.035);
+        ctx.fillStyle = shadow;
+        ctx.beginPath();
+        ctx.moveTo(9, -13);
+        ctx.bezierCurveTo(25, -31, 39, -40, 50, -37);
+        ctx.bezierCurveTo(42, -26, 40, -12, 31, 0);
+        ctx.bezierCurveTo(24, 9, 15, 5, 9, -13);
+        ctx.fill();
+        for (let featherIndex = 0; featherIndex < 5; featherIndex++) {
+          const startX = 15 + featherIndex * 3;
+          const startY = -14 + featherIndex * 3;
+          const tipX = 49 - featherIndex * 4;
+          const tipY = -34 + featherIndex * 7;
+          ctx.fillStyle = featherIndex % 2 ? "#fff" : feather;
+          ctx.beginPath();
+          ctx.moveTo(startX, startY);
+          ctx.quadraticCurveTo(tipX + 5, tipY - 5, tipX, tipY);
+          ctx.quadraticCurveTo(tipX - 7, tipY + 9, startX - 2, startY + 8);
+          ctx.closePath();
+          ctx.fill();
+          ctx.strokeStyle = heavenly ? "#e5c76d" : "#b5dced";
+          ctx.globalAlpha = 0.55;
+          ctx.lineWidth = 0.7;
+          ctx.beginPath();
+          ctx.moveTo(startX, startY + 2);
+          ctx.quadraticCurveTo(tipX - 2, tipY + 8, tipX, tipY);
+          ctx.stroke();
+          ctx.globalAlpha = 0.9;
+        }
+        ctx.restore();
+      }
+      ctx.restore();
+    }
+
+    function drawHumanoidLimbs(animation, heavenly = false) {
+      const step = Math.sin(animation * 0.9) * 2;
+      const armor = heavenly ? "#d8b954" : "#5c8cae";
+      const shadow = heavenly ? "#765322" : "#263d5b";
+      const skin = "#e7b08a";
+      ctx.save();
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+      ctx.strokeStyle = shadow;
+      ctx.lineWidth = 8;
+      ctx.beginPath();
+      ctx.moveTo(-6, 8); ctx.lineTo(-8 + step, 17); ctx.lineTo(-9 + step, 25);
+      ctx.moveTo(6, 8); ctx.lineTo(8 - step, 17); ctx.lineTo(9 - step, 25);
+      ctx.stroke();
+      ctx.strokeStyle = armor;
+      ctx.lineWidth = 5;
+      ctx.beginPath();
+      ctx.moveTo(-6, 8); ctx.lineTo(-8 + step, 17);
+      ctx.moveTo(6, 8); ctx.lineTo(8 - step, 17);
+      ctx.stroke();
+      ctx.fillStyle = shadow;
+      ctx.beginPath();
+      ctx.ellipse(-11 + step, 27, 7, 3.5, -0.12, 0, Math.PI * 2);
+      ctx.ellipse(11 - step, 27, 7, 3.5, 0.12, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.strokeStyle = shadow;
+      ctx.lineWidth = 8;
+      ctx.beginPath();
+      ctx.moveTo(-11, -14); ctx.lineTo(-19, -7 + step); ctx.lineTo(-18, 3 + step);
+      ctx.moveTo(11, -14); ctx.lineTo(19, -7 - step); ctx.lineTo(18, 3 - step);
+      ctx.stroke();
+      ctx.strokeStyle = armor;
+      ctx.lineWidth = 5;
+      ctx.beginPath();
+      ctx.moveTo(-11, -14); ctx.lineTo(-19, -7 + step);
+      ctx.moveTo(11, -14); ctx.lineTo(19, -7 - step);
+      ctx.stroke();
+      ctx.fillStyle = skin;
+      ctx.beginPath();
+      ctx.arc(-18, 4 + step, 3.2, 0, Math.PI * 2);
+      ctx.arc(18, 4 - step, 3.2, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+
     function drawScythe(scale = 1, rotation = 0, heavenly = false) {
       ctx.save();
       ctx.rotate(rotation);
@@ -2796,34 +2885,39 @@
       ctx.lineTo(1, -82);
       ctx.stroke();
 
-      const steel = ctx.createLinearGradient(4, -93, 110, -155);
+      const steel = ctx.createLinearGradient(4, -93, 112, -156);
       steel.addColorStop(0, heavenly ? "#c1902d" : "#737d86");
       steel.addColorStop(0.22, heavenly ? "#fff6c8" : "#e1e7eb");
       steel.addColorStop(0.55, heavenly ? "#e5bf56" : "#aeb8c0");
-      steel.addColorStop(0.82, heavenly ? "#fffdf0" : "#f7f9fa");
+      steel.addColorStop(0.78, heavenly ? "#fffdf0" : "#f7f9fa");
       steel.addColorStop(1, heavenly ? "#ad7a20" : "#78838c");
       ctx.fillStyle = steel;
       ctx.beginPath();
       ctx.moveTo(0, -91);
-      ctx.bezierCurveTo(24, -98, 36, -125, 57, -146);
-      ctx.bezierCurveTo(74, -163, 98, -165, 116, -155);
-      ctx.bezierCurveTo(94, -157, 83, -143, 75, -126);
-      ctx.bezierCurveTo(60, -97, 40, -80, 0, -91);
+      ctx.bezierCurveTo(27, -96, 42, -126, 67, -150);
+      ctx.bezierCurveTo(84, -166, 105, -167, 120, -157);
+      ctx.quadraticCurveTo(108, -158, 99, -151);
+      ctx.bezierCurveTo(88, -143, 81, -127, 71, -111);
+      ctx.bezierCurveTo(54, -85, 31, -77, 0, -91);
       ctx.closePath();
       ctx.fill();
-      ctx.strokeStyle = "#f8fbfd";
-      ctx.lineWidth = 3;
+      ctx.strokeStyle = heavenly ? "#fff9dc" : "#fbfdff";
+      ctx.lineWidth = 2.5;
       ctx.beginPath();
-      ctx.moveTo(7, -94);
-      ctx.bezierCurveTo(29, -105, 41, -130, 62, -149);
-      ctx.bezierCurveTo(78, -162, 98, -163, 116, -155);
+      ctx.moveTo(5, -94);
+      ctx.bezierCurveTo(31, -102, 47, -133, 71, -153);
+      ctx.bezierCurveTo(88, -167, 105, -166, 120, -157);
       ctx.stroke();
-      ctx.strokeStyle = "#626c75";
-      ctx.lineWidth = 2;
+      ctx.strokeStyle = heavenly ? "#987126" : "#66727c";
+      ctx.lineWidth = 1.5;
       ctx.beginPath();
       ctx.moveTo(13, -91);
-      ctx.bezierCurveTo(38, -88, 55, -105, 72, -132);
+      ctx.bezierCurveTo(40, -83, 59, -103, 76, -130);
       ctx.stroke();
+      ctx.fillStyle = heavenly ? "#fff2a1" : "#dce8ed";
+      ctx.beginPath();
+      ctx.arc(3, -92, 4, 0, Math.PI * 2);
+      ctx.fill();
       ctx.restore();
     }
 
@@ -3518,6 +3612,12 @@
       if (weapon.heavenly || weapon.type === "combat") {
         ctx.save();
         ctx.translate(0, -6);
+        drawFeatheredWings(sceneTime, 0.72, true);
+        ctx.restore();
+      }
+      if (weapon.heavenly || weapon.type === "combat") {
+        ctx.save();
+        ctx.translate(0, -6);
         ctx.strokeStyle = "#ffe58b";
         ctx.shadowColor = "#fff0aa";
         ctx.shadowBlur = 16;
@@ -4098,6 +4198,8 @@
       } else if (enemy.type === "stormElite") {
         drawStormGuardFigure(enemy, animation);
       } else if (isHeavenlyEnemy) {
+        drawFeatheredWings(animation, isHeavenlyBoss ? 1.18 : 0.92, true);
+        drawHumanoidLimbs(animation, true);
         const armor = ctx.createLinearGradient(-18, -30, 18, 18);
         armor.addColorStop(0, "#fff8c6");
         armor.addColorStop(0.52, isHeavenlyBoss ? "#f5c84f" : "#e8d17d");
@@ -4110,22 +4212,30 @@
         ctx.arc(0, -20, 12, 0, Math.PI * 2);
         ctx.fill();
         ctx.shadowBlur = 0;
+        ctx.fillStyle = "#e7b08a";
+        ctx.beginPath();
+        ctx.ellipse(0, -20, 7.5, 9.5, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = "#b8843e";
+        ctx.beginPath();
+        ctx.moveTo(-8, -23); ctx.quadraticCurveTo(-8, -34, 0, -32);
+        ctx.quadraticCurveTo(9, -32, 8, -22); ctx.lineTo(3, -26);
+        ctx.lineTo(-1, -24); ctx.lineTo(-5, -27); ctx.closePath();
+        ctx.fill();
         ctx.fillStyle = "#fff";
         ctx.beginPath();
-        ctx.ellipse(-5, -23, 2.5, 3.5, 0, 0, Math.PI * 2);
-        ctx.ellipse(5, -23, 2.5, 3.5, 0, 0, Math.PI * 2);
+        ctx.ellipse(-3.5, -20, 1.8, 2.2, 0, 0, Math.PI * 2);
+        ctx.ellipse(3.5, -20, 1.8, 2.2, 0, 0, Math.PI * 2);
         ctx.fill();
-        ctx.strokeStyle = "#fff1ad";
-        ctx.lineWidth = 5;
+        ctx.fillStyle = "#5b7895";
         ctx.beginPath();
-        ctx.moveTo(-12, -9); ctx.quadraticCurveTo(-39, -22, -32, 5);
-        ctx.moveTo(12, -9); ctx.quadraticCurveTo(39, -22, 32, 5);
-        ctx.stroke();
-        ctx.strokeStyle = "#fffdf1";
-        ctx.lineWidth = 2;
+        ctx.arc(-3.5, -20, 0.9, 0, Math.PI * 2);
+        ctx.arc(3.5, -20, 0.9, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = "#b26f66";
+        ctx.lineWidth = 1;
         ctx.beginPath();
-        ctx.moveTo(-13, -7); ctx.lineTo(-27, -2); ctx.lineTo(-17, 1);
-        ctx.moveTo(13, -7); ctx.lineTo(27, -2); ctx.lineTo(17, 1);
+        ctx.moveTo(-1, -14); ctx.quadraticCurveTo(1, -12, 3, -14);
         ctx.stroke();
         ctx.strokeStyle = "#fff5c3";
         ctx.lineWidth = 3;
@@ -4147,6 +4257,7 @@
           ctx.stroke();
         }
       } else if (isLightningEnemy) {
+        drawHumanoidLimbs(animation);
         const armor = ctx.createLinearGradient(-18, -30, 18, 18);
         if (enemy.type === "lightningBoss" || isStormKing) {
           armor.addColorStop(0, "#a18df2");
@@ -4166,6 +4277,16 @@
         ctx.arc(0, -20, 12, 0, Math.PI * 2);
         ctx.fill();
         ctx.shadowBlur = 0;
+        ctx.fillStyle = "#e8b28e";
+        ctx.beginPath();
+        ctx.ellipse(0, -20, 7.5, 9, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = enemy.type === "lightningBoss" ? "#372b59" : "#283b56";
+        ctx.beginPath();
+        ctx.moveTo(-8, -23); ctx.quadraticCurveTo(-8, -34, 0, -32);
+        ctx.quadraticCurveTo(9, -32, 8, -22); ctx.lineTo(3, -26);
+        ctx.lineTo(-1, -24); ctx.lineTo(-5, -27); ctx.closePath();
+        ctx.fill();
         ctx.fillStyle = "#f4e976";
         ctx.beginPath();
         ctx.moveTo(-2, -11); ctx.lineTo(5, -2); ctx.lineTo(0, -2);
@@ -4173,13 +4294,13 @@
         ctx.fill();
         ctx.fillStyle = "#fff";
         ctx.beginPath();
-        ctx.ellipse(-5, -24, 2.5, 3.5, 0, 0, Math.PI * 2);
-        ctx.ellipse(5, -24, 2.5, 3.5, 0, 0, Math.PI * 2);
+        ctx.ellipse(-3.5, -20, 1.8, 2.2, 0, 0, Math.PI * 2);
+        ctx.ellipse(3.5, -20, 1.8, 2.2, 0, 0, Math.PI * 2);
         ctx.fill();
-        ctx.fillStyle = "#29334e";
+        ctx.fillStyle = "#34445c";
         ctx.beginPath();
-        ctx.arc(-5, -23, 1.2, 0, Math.PI * 2);
-        ctx.arc(5, -23, 1.2, 0, Math.PI * 2);
+        ctx.arc(-3.5, -20, 0.9, 0, Math.PI * 2);
+        ctx.arc(3.5, -20, 0.9, 0, Math.PI * 2);
         ctx.fill();
         if (enemy.type === "guard" || enemy.type === "stormElite" || isStormKing) {
           ctx.strokeStyle = isStormKing ? "#ffe982" : "#79eaff";
