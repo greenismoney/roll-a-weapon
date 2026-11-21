@@ -58,6 +58,36 @@
       backdrop-filter: blur(8px);
       font-weight: 700;
     }
+    .game-hud-actions {
+      margin-bottom: 7px;
+    }
+    .game-hud-actions button {
+      margin: 0;
+      padding: 6px 10px;
+      border: 1px solid #ffffff55;
+      border-radius: 7px;
+      color: white;
+      background: linear-gradient(145deg, #7187a8, #405574);
+      font-size: 11px;
+      font-weight: 900;
+      cursor: pointer;
+    }
+    .ability-strip {
+      display: flex;
+      gap: 6px;
+      margin-top: 7px;
+    }
+    .ability-chip {
+      flex: 1;
+      min-width: 0;
+      padding: 5px 4px;
+      border: 1px solid #ffffff30;
+      border-radius: 7px;
+      background: #101a2d99;
+      text-align: center;
+      font-size: 9px;
+      letter-spacing: .04em;
+    }
 
     .health-track {
       height: 12px;
@@ -434,6 +464,12 @@
       touch-action: none;
     }
     .mobile-controls [data-ultimate] { grid-column: 5; grid-row: 2; }
+    .mobile-controls [data-combat] { grid-column: 5; grid-row: 1; }
+    .mobile-controls [data-combat] {
+      background: linear-gradient(135deg, #f1bd4b, #a96f1d);
+      border: 2px solid #fff1a8;
+      border-radius: 50%;
+    }
     .mobile-controls [data-direction="up"] { grid-column: 3; grid-row: 1; }
     .mobile-controls [data-direction="left"] { grid-column: 2; grid-row: 2; }
     .mobile-controls [data-direction="down"] { grid-column: 3; grid-row: 2; }
@@ -480,6 +516,9 @@
     <section class="game" aria-label="2D game">
       <canvas id="scene" width="960" height="540" aria-label="Blue sky, clouds, and a grassy field"></canvas>
       <div class="game-hud" id="gameHud" hidden>
+        <div class="game-hud-actions">
+          <button type="button" id="exitToMenuButton">BACK TO MENU</button>
+        </div>
         <span id="healthText">Health: 100 / 100</span>
         <div class="health-track" role="progressbar" aria-label="Health" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100">
           <div class="health-fill" id="healthFill"></div>
@@ -491,6 +530,11 @@
         <span id="weaponText">Weapon: Whip (Common)</span><br>
         <span id="ultimateText">Ultimate: 0 / 100 damage (R)</span><br>
         <span id="healthDropText">Health drop: 10s</span>
+        <div class="ability-strip" aria-label="Abilities">
+          <span class="ability-chip">SPACE<br><strong>ATTACK</strong></span>
+          <span class="ability-chip" id="combatAbilityChip">Q<br><strong>ABILITY</strong></span>
+          <span class="ability-chip">R<br><strong>ULTIMATE</strong></span>
+        </div>
       </div>
       <div class="game-popup" id="heavenlyChoicePopup" hidden>
         <div class="popup-card">
@@ -732,6 +776,7 @@
       </div>
     </section>
     <div class="mobile-controls" aria-label="Movement and combat controls">
+      <button type="button" data-combat aria-label="Use ability">ABILITY</button>
       <button type="button" data-ultimate aria-label="Use ultimate">ULTIMATE</button>
       <button type="button" data-direction="up" aria-label="Move up">▲</button>
       <button type="button" data-direction="left" aria-label="Move left">◀</button>
@@ -822,6 +867,7 @@
     const weaponText = document.querySelector("#weaponText");
     const ultimateText = document.querySelector("#ultimateText");
     const mobileUltimateButton = document.querySelector("[data-ultimate]");
+    const combatAbilityChip = document.querySelector("#combatAbilityChip");
     const playHelp = document.querySelector("#playHelp");
     const heldKeys = new Set();
     const player = {
@@ -854,7 +900,7 @@
       { source: "Double-Sided Axe", name: "Astral Pendulum" },
       { source: "Hero's Sword", name: "Heavenly Hero's Sword (HHS)" },
       { source: "Lightning Queen's Spear", name: "Heavenly Spear" },
-      { source: "Monkey Horn", name: "Celestial Horn" }
+      { source: "Monkey Horn", name: "Heavenly Horn" }
     ];
     const rarityOrder = ["Common", "Rare", "Epic", "Legendary", "Mythic", "Secret", "Godlike"];
     for (const recipe of heavenlyWeaponRecipes) {
@@ -1232,6 +1278,14 @@
       icon.translate(75, 52);
       icon.lineCap = "round";
       icon.lineJoin = "round";
+      const backdrop = icon.createRadialGradient(0, 0, 4, 0, 0, 68);
+      backdrop.addColorStop(0, unlocked ? "#ffffff" : "#53616a");
+      backdrop.addColorStop(0.72, unlocked ? "#dcecff" : "#39464e");
+      backdrop.addColorStop(1, unlocked ? "#91b4ce" : "#252e33");
+      icon.fillStyle = backdrop;
+      icon.beginPath();
+      icon.arc(0, 0, 68, 0, Math.PI * 2);
+      icon.fill();
       icon.strokeStyle = wood;
       icon.fillStyle = metal;
       if (item.type === "whip") {
@@ -1389,39 +1443,24 @@
         const source = item.heavenly ? weapons.find((entry) => entry.name === item.sourceName) : null;
         const cost = item.heavenly && source ? shardCostForRarity(source.rarity) : 0;
         status.textContent = unlocked ? "Unlocked" : item.heavenly
-          ? `Shadowy — ${source && isWeaponUnlocked(source) ? `${cost} shard${cost === 1 ? "" : "s"}` : "unlock its base weapon first"}`
+          ? `Locked — ${source && isWeaponUnlocked(source) ? `${cost} shard${cost === 1 ? "" : "s"} required` : "unlock its base weapon first"}`
           : item.type === "combat" ? "Locked — Heavenly Dojo reward"
             : ["lightningSpear", "monkeyHorn"].includes(item.type) ? "Locked — boss drop" : "Locked — roll to unlock";
         card.append(art, name, rarity, status);
-        if (unlocked && weapon.name !== item.name) {
-          const equipButton = document.createElement("button");
-          equipButton.type = "button";
-          equipButton.textContent = "Equip";
-          equipButton.addEventListener("click", () => {
-            weapon = item;
-            player.ultimateCharge = 0;
-            if (hasSavedGame) saveProgress(savedGame.checkpoint, savedGame.wave);
-            updateHud();
-            updateInventory();
-          });
-          card.append(equipButton);
-        }
         if (item.heavenly && !unlocked && source && isWeaponUnlocked(source)) {
-          const infuseButton = document.createElement("button");
-          infuseButton.type = "button";
-          infuseButton.textContent = `Infuse — ${cost} shard${cost === 1 ? "" : "s"}`;
-          infuseButton.disabled = heavenlyShards < cost;
-          infuseButton.addEventListener("click", () => {
+          const unlockButton = document.createElement("button");
+          unlockButton.type = "button";
+          unlockButton.textContent = `Unlock — ${cost} shard${cost === 1 ? "" : "s"}`;
+          unlockButton.disabled = heavenlyShards < cost;
+          unlockButton.addEventListener("click", () => {
             if (heavenlyShards < cost) return;
             heavenlyShards -= cost;
             unlockedWeaponNames.add(item.name);
-            weapon = item;
-            player.ultimateCharge = 0;
             if (hasSavedGame) saveProgress(savedGame.checkpoint, savedGame.wave);
             updateHud();
             updateInventory();
           });
-          card.append(infuseButton);
+          card.append(unlockButton);
         }
         inventoryItems.append(card);
       }
@@ -1720,11 +1759,12 @@
         : 0;
       const savedWeaponName = savedGame.weaponName === "Lightning Spear"
         ? "Lightning Queen's Spear"
-        : savedGame.weaponName;
+        : savedGame.weaponName === "Celestial Horn" ? "Heavenly Horn" : savedGame.weaponName;
       weapon = weapons.find((item) => item.name === savedWeaponName) || weapons[0];
       const savedUnlocks = Array.isArray(savedGame.unlockedWeaponNames)
         ? savedGame.unlockedWeaponNames
-          .map((name) => name === "Lightning Spear" ? "Lightning Queen's Spear" : name)
+          .map((name) => name === "Lightning Spear" ? "Lightning Queen's Spear" :
+            name === "Celestial Horn" ? "Heavenly Horn" : name)
           .filter((name) => weapons.some((item) => item.name === name))
         : [];
       if (weapons.some((item) => item.name === savedWeaponName)) savedUnlocks.push(savedWeaponName);
@@ -1883,6 +1923,11 @@
       coinsText.textContent = `Coins: ${coins}`;
       shardsText.textContent = `Heavenly Shards: ${heavenlyShards}`;
       weaponText.textContent = `Weapon: ${weapon.name} (${weapon.rarity})`;
+      const hasCombatAbility = weapon.type === "combat";
+      combatAbilityChip.style.opacity = hasCombatAbility ? "1" : "0.45";
+      combatAbilityChip.innerHTML = hasCombatAbility
+        ? "Q<br><strong>CELESTIAL</strong>"
+        : "Q<br><strong>LOCKED</strong>";
       ultimateText.textContent = weapon.rarity === "Common"
         ? "Ultimate: unavailable for Common weapons"
         : `Ultimate: ${Math.floor(player.ultimateCharge)} / 100 damage (R)`;
@@ -3277,6 +3322,23 @@
       ctx.beginPath();
       ctx.ellipse(0, 22, 19, 6, 0, 0, Math.PI * 2);
       ctx.fill();
+      ctx.save();
+      ctx.translate(-facing * 2, 1);
+      const cape = ctx.createLinearGradient(-18, -5, 18, 22);
+      cape.addColorStop(0, weapon.heavenly || weapon.type === "combat" ? "#fff3a1" : "#9b4ec9");
+      cape.addColorStop(1, weapon.heavenly || weapon.type === "combat" ? "#d79a35" : "#4f2b78");
+      ctx.fillStyle = cape;
+      ctx.strokeStyle = "#fff6";
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(-12, -3);
+      ctx.quadraticCurveTo(-facing * 28, 2 + run * 4, -facing * 22, 22);
+      ctx.quadraticCurveTo(0, 27 + run * 3, 12, 14);
+      ctx.lineTo(10, 2);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+      ctx.restore();
       if (weapon.heavenly || weapon.type === "combat") {
         ctx.save();
         ctx.translate(0, -6);
@@ -4448,6 +4510,13 @@
       inventoryPopup.hidden = true;
       mainMenu.hidden = false;
     });
+    document.querySelector("#exitToMenuButton").addEventListener("click", () => {
+      if (hasSavedGame) saveProgress(savedGame.checkpoint, savedGame.wave);
+      isPlaying = false;
+      gameHud.hidden = true;
+      playHelp.hidden = true;
+      showLoadingMenu();
+    });
     musicButton.addEventListener("click", toggleMusic);
     document.addEventListener("pointerdown", () => {
       if (musicEnabled) startMusic();
@@ -4604,6 +4673,7 @@
       }
     }
     document.querySelector("[data-shoot]").addEventListener("click", attack);
+    document.querySelector("[data-combat]").addEventListener("click", useCombatMove);
     mobileUltimateButton.addEventListener("click", useUltimate);
     updateHud();
     updateMusicButton();
