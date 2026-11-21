@@ -1121,6 +1121,8 @@
         !item.heavenly && item.rarity !== "Common" && item.type !== "combat" &&
         (item.type !== "lightningSpear" || spearUnlocked) &&
         (item.type !== "monkeyHorn" || monkeyHornUnlocked));
+      betterWeapons.push(...weapons.filter((item) =>
+        (item.heavenly || item.type === "combat") && isWeaponUnlocked(item)));
       return [
         ...commonWeapons.map((item) => ({ name: item.name, chance: (100 - betterChance) / commonWeapons.length })),
         ...betterWeapons.map((item) => ({ name: item.name, chance: betterChance / betterWeapons.length }))
