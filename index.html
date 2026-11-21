@@ -687,6 +687,7 @@
         <div class="popup-card inventory-card">
           <h2 id="inventoryTitle">Weapon Inventory</h2>
           <p id="inventorySummary"></p>
+          <p>Press L to return to the menu.</p>
           <div class="inventory-grid" id="inventoryItems"></div>
           <button type="button" class="secondary-button" id="closeInventoryButton">Back to menu</button>
         </div>
@@ -4637,6 +4638,11 @@
     document.addEventListener("keydown", (event) => {
       if (musicEnabled) startMusic();
       const key = event.key.toLowerCase();
+      if (key === "l" && !inventoryPopup.hidden) {
+        event.preventDefault();
+        closeInventoryButton.click();
+        return;
+      }
       if (event.code === "Space" && isPlaying) {
         event.preventDefault();
         if (!event.repeat) attack();
