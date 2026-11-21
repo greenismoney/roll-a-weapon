@@ -3574,17 +3574,22 @@
       ctx.translate(0, 10);
       ctx.rotate(run * 0.16);
       ctx.strokeStyle = "#25304f";
-      ctx.lineWidth = 8;
+      ctx.lineWidth = 10;
       ctx.lineCap = "round";
       ctx.beginPath();
-      ctx.moveTo(-5, 0); ctx.lineTo(-8 + run * 4, 14);
-      ctx.moveTo(5, 0); ctx.lineTo(8 - run * 4, 14);
+      ctx.moveTo(-5, 0); ctx.lineTo(-7 + run * 4, 8); ctx.lineTo(-9 + run * 7, 14);
+      ctx.moveTo(5, 0); ctx.lineTo(7 - run * 4, 8); ctx.lineTo(9 - run * 7, 14);
       ctx.stroke();
-      ctx.strokeStyle = "#26334f";
-      ctx.lineWidth = 6;
+      ctx.fillStyle = "#17233b";
       ctx.beginPath();
-      ctx.moveTo(-8 + run * 4, 14); ctx.lineTo(-13 + run * 4, 15);
-      ctx.moveTo(8 - run * 4, 14); ctx.lineTo(13 - run * 4, 15);
+      ctx.roundRect(-15 + run * 7, 11, 12, 8, 3);
+      ctx.roundRect(3 - run * 7, 11, 12, 8, 3);
+      ctx.fill();
+      ctx.strokeStyle = "#8296bf";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(-9 + run * 7, 15); ctx.lineTo(-14 + run * 7, 16);
+      ctx.moveTo(9 - run * 7, 15); ctx.lineTo(4 - run * 7, 16);
       ctx.stroke();
       ctx.restore();
       ctx.save();
@@ -3618,11 +3623,37 @@
       ctx.fill();
       ctx.fillStyle = "#f4d18c";
       ctx.fillRect(-10, 12, 20, 4);
+      ctx.fillStyle = "#ffe49a";
+      ctx.beginPath();
+      ctx.arc(0, 14, 2.4, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = "#8eeeff";
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(-6, -2); ctx.lineTo(-2, 4); ctx.lineTo(2, 4); ctx.lineTo(6, -2);
+      ctx.stroke();
+      ctx.fillStyle = "#9ceaff";
+      ctx.beginPath();
+      ctx.ellipse(-11, -2, 5, 4, -0.3, 0, Math.PI * 2);
+      ctx.ellipse(11, -2, 5, 4, 0.3, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = "#c8f7ff";
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.arc(-11, -2, 3, 0.2, 2.8);
+      ctx.arc(11, -2, 3, 0.4, 3);
+      ctx.stroke();
       ctx.strokeStyle = "#ffe0ad";
-      ctx.lineWidth = 6;
+      ctx.lineWidth = 7;
       ctx.beginPath();
       ctx.moveTo(-10, -2); ctx.lineTo(-16, 8 + run * 1.5);
       ctx.moveTo(10, -2); ctx.lineTo(16, 7 - run * 1.5);
+      ctx.stroke();
+      ctx.strokeStyle = "#386eae";
+      ctx.lineWidth = 9;
+      ctx.beginPath();
+      ctx.moveTo(-10, -2); ctx.lineTo(-13, 2);
+      ctx.moveTo(10, -2); ctx.lineTo(13, 2);
       ctx.stroke();
       ctx.fillStyle = "#f6c68b";
       ctx.beginPath();
@@ -3700,6 +3731,294 @@
       ctx.restore();
     }
 
+    function drawStormKingFigure(enemy, animation) {
+      const step = enemy.moving ? Math.sin(animation * 0.9) : Math.sin(animation * 0.35) * 0.06;
+      const attack = Math.min(1, (enemy.attackPose || 0) * 2.5);
+      const breath = Math.sin(animation * 0.7) * 0.7;
+      ctx.save();
+      ctx.translate(-(enemy.hitFlash || 0) * 10, 0);
+      ctx.rotate(attack * 0.025 - (enemy.hitFlash || 0) * 0.04);
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+
+      const cape = ctx.createLinearGradient(-24, -23, 24, 28);
+      cape.addColorStop(0, "#72509d");
+      cape.addColorStop(0.55, "#352c60");
+      cape.addColorStop(1, "#1c2844");
+      ctx.fillStyle = cape;
+      ctx.beginPath();
+      ctx.moveTo(-12, -27);
+      ctx.quadraticCurveTo(-31, -18 + step * 3, -23, 13);
+      ctx.lineTo(-13, 9);
+      ctx.lineTo(0, 20 + step * 2);
+      ctx.lineTo(13, 9);
+      ctx.lineTo(24, 14 - step * 3);
+      ctx.quadraticCurveTo(30, -15 - step * 2, 12, -27);
+      ctx.closePath();
+      ctx.fill();
+
+      ctx.strokeStyle = "#49345b";
+      ctx.lineWidth = 6;
+      ctx.beginPath();
+      ctx.moveTo(31, 19);
+      ctx.lineTo(39 + attack * 6, -66);
+      ctx.stroke();
+      ctx.strokeStyle = "#8eeeff";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(31, 18);
+      ctx.lineTo(39 + attack * 6, -66);
+      ctx.stroke();
+      ctx.fillStyle = "#fff1a1";
+      ctx.shadowColor = "#6feaff";
+      ctx.shadowBlur = 12;
+      ctx.beginPath();
+      ctx.moveTo(39 + attack * 6, -76);
+      ctx.lineTo(33 + attack * 6, -67);
+      ctx.lineTo(39 + attack * 6, -62);
+      ctx.lineTo(34 + attack * 6, -53);
+      ctx.lineTo(48 + attack * 6, -66);
+      ctx.lineTo(43 + attack * 6, -70);
+      ctx.closePath();
+      ctx.fill();
+      ctx.shadowBlur = 0;
+
+      ctx.strokeStyle = "#202a47";
+      ctx.lineWidth = 9;
+      ctx.beginPath();
+      ctx.moveTo(-7, 4); ctx.lineTo(-9 + step * 4, 15); ctx.lineTo(-11 + step * 7, 25);
+      ctx.moveTo(7, 4); ctx.lineTo(9 - step * 4, 15); ctx.lineTo(11 - step * 7, 25);
+      ctx.stroke();
+      ctx.fillStyle = "#151d32";
+      ctx.beginPath();
+      ctx.roundRect(-18 + step * 7, 21, 12, 8, 3);
+      ctx.roundRect(6 - step * 7, 21, 12, 8, 3);
+      ctx.fill();
+      ctx.strokeStyle = "#d5b86b";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(-7, 9); ctx.lineTo(-13 + step * 5, 14);
+      ctx.moveTo(7, 9); ctx.lineTo(13 - step * 5, 14);
+      ctx.stroke();
+
+      const coat = ctx.createLinearGradient(-17, -31, 17, 15);
+      coat.addColorStop(0, "#5269a0");
+      coat.addColorStop(0.45, "#263e70");
+      coat.addColorStop(1, "#172847");
+      ctx.fillStyle = coat;
+      ctx.strokeStyle = "#d5bd79";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(-12, -31); ctx.lineTo(12, -31);
+      ctx.lineTo(16, 5); ctx.lineTo(8, 15); ctx.lineTo(0, 9);
+      ctx.lineTo(-8, 15); ctx.lineTo(-16, 5); ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = "#d7c27d";
+      ctx.fillRect(-13, 2, 26, 4);
+      ctx.fillStyle = "#fff0a1";
+      ctx.beginPath(); ctx.arc(0, 4, 3, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = "#8feaff";
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.moveTo(-4, -23); ctx.lineTo(2, -15); ctx.lineTo(-2, -10);
+      ctx.lineTo(5, -4); ctx.stroke();
+      ctx.fillStyle = "#8fa9d1";
+      ctx.beginPath();
+      ctx.ellipse(-12, -25, 6, 8, -0.3, 0, Math.PI * 2);
+      ctx.ellipse(12, -25, 6, 8, 0.3, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = "#c8d6ed";
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.arc(-12, -25, 4, 0.3, 2.5);
+      ctx.arc(12, -25, 4, 0.6, 2.8);
+      ctx.stroke();
+
+      ctx.strokeStyle = "#4d5774";
+      ctx.lineWidth = 7;
+      ctx.beginPath();
+      ctx.moveTo(-12, -24); ctx.lineTo(-20, -13 + step * 2); ctx.lineTo(-17, -4);
+      ctx.moveTo(12, -24); ctx.lineTo(21, -16 - attack * 5); ctx.lineTo(31, -10 - attack * 8);
+      ctx.stroke();
+      ctx.fillStyle = "#e7d28f";
+      ctx.beginPath();
+      ctx.arc(-17, -4, 4, 0, Math.PI * 2);
+      ctx.arc(31, -10 - attack * 8, 4, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = "#e7d28f";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(-20, -11); ctx.lineTo(-15, -13);
+      ctx.moveTo(19, -17); ctx.lineTo(24, -18);
+      ctx.stroke();
+
+      const face = ctx.createLinearGradient(-7, -57, 8, -31);
+      face.addColorStop(0, "#ffd9ad");
+      face.addColorStop(1, "#b96e5c");
+      ctx.fillStyle = face;
+      ctx.beginPath();
+      ctx.ellipse(0, -42 + breath * 0.2, 9, 12, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "#38283d";
+      ctx.beginPath();
+      ctx.moveTo(-9, -45); ctx.quadraticCurveTo(-10, -59, 0, -57);
+      ctx.quadraticCurveTo(10, -58, 9, -43); ctx.lineTo(4, -48);
+      ctx.lineTo(0, -45); ctx.lineTo(-4, -49); ctx.closePath();
+      ctx.fill();
+      ctx.fillStyle = "#37263a";
+      ctx.beginPath();
+      ctx.moveTo(-7, -37); ctx.quadraticCurveTo(0, -32, 7, -38);
+      ctx.lineTo(5, -31); ctx.lineTo(0, -29); ctx.lineTo(-5, -31); ctx.closePath();
+      ctx.fill();
+      ctx.fillStyle = "#fff";
+      ctx.beginPath(); ctx.ellipse(3, -43, 2, 2.6, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "#26304b";
+      ctx.beginPath(); ctx.arc(3.8, -43, 1, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = "#673c43";
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(5, -36); ctx.lineTo(8, -37);
+      ctx.stroke();
+      ctx.fillStyle = "#e7c96d";
+      ctx.beginPath();
+      ctx.moveTo(-10, -51); ctx.lineTo(-8, -63); ctx.lineTo(-2, -56);
+      ctx.lineTo(2, -67); ctx.lineTo(6, -56); ctx.lineTo(11, -62);
+      ctx.lineTo(10, -50); ctx.closePath();
+      ctx.fill();
+      ctx.strokeStyle = "#fff0a6";
+      ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.moveTo(-8, -52); ctx.lineTo(8, -52); ctx.stroke();
+      ctx.fillStyle = "#77eaff";
+      ctx.shadowColor = "#77eaff";
+      ctx.shadowBlur = 9 + Math.sin(sceneTime * 5) * 3;
+      ctx.beginPath(); ctx.arc(0, -54, 2.2, 0, Math.PI * 2); ctx.fill();
+      if (attack > 0) {
+        ctx.globalAlpha = attack * 0.8;
+        ctx.strokeStyle = "#8ff5ff";
+        ctx.shadowColor = "#78edff";
+        ctx.shadowBlur = 16;
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.arc(37, -31, 24 + attack * 9, -1.7, 0.5);
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+
+    function drawStormGuardFigure(enemy, animation) {
+      const step = enemy.moving ? Math.sin(animation) : Math.sin(animation * 0.35) * 0.05;
+      const attack = Math.min(1, (enemy.attackPose || 0) * 2.5);
+      ctx.save();
+      ctx.translate(-(enemy.hitFlash || 0) * 8, 0);
+      ctx.rotate(-attack * 0.025);
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+
+      ctx.fillStyle = "#263854";
+      ctx.beginPath();
+      ctx.moveTo(-10, -24); ctx.quadraticCurveTo(-22, -9 + step * 2, -16, 10);
+      ctx.lineTo(0, 15); ctx.lineTo(16, 10); ctx.quadraticCurveTo(20, -11, 10, -24);
+      ctx.closePath();
+      ctx.fill();
+      ctx.strokeStyle = "#26334f";
+      ctx.lineWidth = 7;
+      ctx.beginPath();
+      ctx.moveTo(-5, 4); ctx.lineTo(-8 + step * 4, 14); ctx.lineTo(-9 + step * 6, 22);
+      ctx.moveTo(5, 4); ctx.lineTo(8 - step * 4, 14); ctx.lineTo(9 - step * 6, 22);
+      ctx.stroke();
+      ctx.fillStyle = "#141e34";
+      ctx.beginPath();
+      ctx.roundRect(-15 + step * 6, 20, 10, 7, 3);
+      ctx.roundRect(5 - step * 6, 20, 10, 7, 3);
+      ctx.fill();
+
+      const armor = ctx.createLinearGradient(-13, -27, 14, 14);
+      armor.addColorStop(0, "#e1faff");
+      armor.addColorStop(0.48, "#6099bc");
+      armor.addColorStop(1, "#294d76");
+      ctx.fillStyle = armor;
+      ctx.strokeStyle = "#c8edff";
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(-10, -25); ctx.lineTo(10, -25); ctx.lineTo(14, 5);
+      ctx.lineTo(8, 12); ctx.lineTo(-8, 12); ctx.lineTo(-14, 5); ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = "#263d61";
+      ctx.fillRect(-11, 2, 22, 4);
+      ctx.fillStyle = "#f4df87";
+      ctx.beginPath();
+      ctx.moveTo(-2, -19); ctx.lineTo(2, -12); ctx.lineTo(-1, -8);
+      ctx.lineTo(3, -3); ctx.lineTo(-4, -9); ctx.lineTo(-1, -13); ctx.closePath();
+      ctx.fill();
+      ctx.fillStyle = "#91aeca";
+      ctx.beginPath();
+      ctx.ellipse(-12, -21, 5, 7, -0.4, 0, Math.PI * 2);
+      ctx.ellipse(12, -21, 5, 7, 0.4, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = "#bfefff";
+      ctx.lineWidth = 6;
+      ctx.beginPath();
+      ctx.moveTo(-11, -20); ctx.lineTo(-18, -10 + step * 2); ctx.lineTo(-15, 0);
+      ctx.moveTo(11, -20); ctx.lineTo(19, -14 - attack * 5); ctx.lineTo(27, -10 - attack * 7);
+      ctx.stroke();
+      ctx.fillStyle = "#b8eaff";
+      ctx.beginPath();
+      ctx.arc(-15, 0, 3.5, 0, Math.PI * 2);
+      ctx.arc(27, -10 - attack * 7, 3.5, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.strokeStyle = "#334566";
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.moveTo(30, 17); ctx.lineTo(34 + attack * 5, -47);
+      ctx.stroke();
+      ctx.strokeStyle = "#75eaff";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(30, 17); ctx.lineTo(34 + attack * 5, -47);
+      ctx.stroke();
+      ctx.fillStyle = "#fff29c";
+      ctx.beginPath();
+      ctx.moveTo(34 + attack * 5, -56); ctx.lineTo(29 + attack * 5, -48);
+      ctx.lineTo(36 + attack * 5, -46); ctx.lineTo(31 + attack * 5, -38);
+      ctx.lineTo(44 + attack * 5, -50); ctx.lineTo(38 + attack * 5, -52);
+      ctx.closePath();
+      ctx.fill();
+      if (attack > 0) {
+        ctx.globalAlpha = attack * 0.75;
+        ctx.strokeStyle = "#9af4ff";
+        ctx.shadowColor = "#75eaff";
+        ctx.shadowBlur = 12;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(31, -20, 18 + attack * 5, -1.5, 0.45);
+        ctx.stroke();
+      }
+
+      const face = ctx.createLinearGradient(-6, -48, 7, -28);
+      face.addColorStop(0, "#f5d0aa");
+      face.addColorStop(1, "#ac6e5d");
+      ctx.fillStyle = face;
+      ctx.beginPath();
+      ctx.ellipse(0, -34, 7, 9, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "#344966";
+      ctx.beginPath();
+      ctx.moveTo(-8, -37); ctx.lineTo(-7, -48); ctx.lineTo(0, -52);
+      ctx.lineTo(8, -48); ctx.lineTo(8, -37); ctx.lineTo(0, -41); ctx.closePath();
+      ctx.fill();
+      ctx.fillStyle = "#bdeeff";
+      ctx.beginPath();
+      ctx.moveTo(-8, -43); ctx.lineTo(0, -52); ctx.lineTo(8, -43);
+      ctx.lineTo(5, -39); ctx.lineTo(-5, -39); ctx.closePath();
+      ctx.fill();
+      ctx.fillStyle = "#75eaff";
+      ctx.beginPath(); ctx.arc(0, -44, 2, 0, Math.PI * 2); ctx.fill();
+      ctx.restore();
+    }
+
     function drawEnemy(enemy) {
       const isBunnyBoss = enemy.type === "boss";
       const isLightningBoss = enemy.type === "lightningBoss";
@@ -3710,7 +4029,7 @@
       const isBoss = isBunnyBoss || isLightningBoss || isGorillaBoss || isHeavenlyBoss || isStormKing;
       const isLightningEnemy = ["fighter", "guard", "lightningBoss", "stormElite", "stormKing"].includes(enemy.type);
       const isGorillaEnemy = ["monkey", "gorilla", "armoredGorilla", "gorillaEmperor"].includes(enemy.type);
-      const scale = isBoss ? 2 : ["guard", "stormElite", "armoredGorilla"].includes(enemy.type) ? 1.35 :
+      const scale = isStormKing ? 1.75 : isBoss ? 2 : ["guard", "stormElite", "armoredGorilla"].includes(enemy.type) ? 1.35 :
         enemy.type === "big" ? 1.45 : enemy.type === "gorilla" ? 1.2 : 1;
       const animation = enemy.animationTime || 0;
       const facing = enemy.facing || 1;
@@ -3774,7 +4093,11 @@
         : 0;
       ctx.translate(enemy.x + shake, enemy.y + sink * 30 - hop);
       ctx.scale(scale * facing, scale * (1 + Math.sin(animation * 0.55) * 0.025));
-      if (isHeavenlyEnemy) {
+      if (isStormKing) {
+        drawStormKingFigure(enemy, animation);
+      } else if (enemy.type === "stormElite") {
+        drawStormGuardFigure(enemy, animation);
+      } else if (isHeavenlyEnemy) {
         const armor = ctx.createLinearGradient(-18, -30, 18, 18);
         armor.addColorStop(0, "#fff8c6");
         armor.addColorStop(0.52, isHeavenlyBoss ? "#f5c84f" : "#e8d17d");
@@ -3990,13 +4313,38 @@
         ctx.stroke();
         ctx.restore();
       }
-      ctx.fillStyle = "#493925";
-      ctx.fillRect(-10 + Math.sin(animation) * 2, 8, 7, 5);
-      ctx.fillRect(7 - Math.sin(animation) * 2, 8, 7, 5);
+      if (enemy.poisonTimer > 0 && !enemy.dying) {
+        ctx.save();
+        ctx.globalAlpha = 0.75;
+        ctx.strokeStyle = "#7df6e3";
+        ctx.shadowColor = "#39e2dc";
+        ctx.shadowBlur = 12;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.ellipse(enemy.x, enemy.y - 17, 26, 34, Math.sin(animation) * 0.12, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.restore();
+      }
+      if (enemy.stunTimer > 0 && !enemy.dying) {
+        ctx.save();
+        ctx.textAlign = "center";
+        ctx.font = "bold 15px system-ui";
+        ctx.fillStyle = "#fff09a";
+        ctx.shadowColor = "#75eaff";
+        ctx.shadowBlur = 9;
+        ctx.fillText("✦  ✦  ✦", enemy.x, enemy.y - (isStormKing ? 120 : isBoss ? 88 : 63));
+        ctx.restore();
+      }
+      if (!isStormKing && enemy.type !== "stormElite") {
+        ctx.fillStyle = "#493925";
+        ctx.fillRect(-10 + Math.sin(animation) * 2, 8, 7, 5);
+        ctx.fillRect(7 - Math.sin(animation) * 2, 8, 7, 5);
+      }
       ctx.restore();
-      const barWidth = isBoss ? 100 : enemy.type === "guard" || enemy.type === "armoredGorilla" ? 52 :
+      const barWidth = isBoss ? 100 : enemy.type === "guard" || enemy.type === "stormElite" || enemy.type === "armoredGorilla" ? 52 :
         enemy.type === "big" || enemy.type === "gorilla" ? 48 : 40;
-      const barY = enemy.y - (isBoss ? 78 : enemy.type === "guard" || enemy.type === "armoredGorilla" ? 48 :
+      const barY = enemy.y - (isStormKing ? 132 : isBoss ? 78 :
+        enemy.type === "guard" || enemy.type === "stormElite" || enemy.type === "armoredGorilla" ? 48 :
         enemy.type === "big" ? 55 : 42);
       if (!enemy.dying) {
         const barHeight = isBoss ? 7 : 5;
@@ -4294,6 +4642,7 @@
         enemy.animationTime = (enemy.animationTime || 0) +
           delta * (["boss", "lightningBoss", "gorillaEmperor", "heavenlyHero", "dojoMaster", "stormKing"].includes(enemy.type) ? 7 : 10);
         enemy.hitFlash = Math.max(0, (enemy.hitFlash || 0) - delta);
+        enemy.attackPose = Math.max(0, (enemy.attackPose || 0) - delta * 3.2);
         const stunned = enemy.stunTimer > 0;
         const dx = player.x - enemy.x;
         const dy = player.y - enemy.y;
@@ -4304,7 +4653,8 @@
           enemy.type === "armoredGorilla" || enemy.type === "gorillaEmperor" ? 30 :
             enemy.type === "gorilla" ? 36 : 48;
         const keepDistance = ["dojoMaster", "stormElite", "stormKing"].includes(enemy.type) ? 140 : 28;
-        if (!stunned && distance > keepDistance) {
+        enemy.moving = !stunned && distance > keepDistance;
+        if (enemy.moving) {
           enemy.x += dx / distance * speed * delta;
           enemy.y = Math.max(391, enemy.y + dy / distance * speed * delta);
         }
@@ -4313,6 +4663,7 @@
           enemy.attackTimer -= delta;
           if (enemy.type === "dojoMaster") enemy.ultimateTimer -= delta;
           if (enemy.attackTimer <= 0) {
+            enemy.attackPose = 1;
             const aimX = player.x - enemy.x;
             const aimY = player.y - enemy.y;
             const aimLength = Math.hypot(aimX, aimY) || 1;
