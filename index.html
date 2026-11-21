@@ -4119,6 +4119,225 @@
       ctx.restore();
     }
 
+    function drawLightningQueenFigure(enemy, animation) {
+      const step = enemy.moving ? Math.sin(animation * 0.9) : 0;
+      const attack = Math.min(1, (enemy.attackPose || 0) * 2.5);
+      ctx.save();
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+
+      ctx.fillStyle = "#342d59";
+      ctx.beginPath();
+      ctx.moveTo(-12, -24); ctx.lineTo(-17, 7 + step * 2);
+      ctx.lineTo(0, 17); ctx.lineTo(17, 7 - step * 2); ctx.lineTo(12, -24);
+      ctx.closePath();
+      ctx.fill();
+      ctx.fillStyle = "#7451a0";
+      ctx.beginPath();
+      ctx.moveTo(-10, -20); ctx.lineTo(-18, 12); ctx.lineTo(-8, 8);
+      ctx.lineTo(0, 18); ctx.lineTo(8, 8); ctx.lineTo(18, 12); ctx.lineTo(10, -20);
+      ctx.closePath();
+      ctx.fill();
+      ctx.strokeStyle = "#202d52";
+      ctx.lineWidth = 7;
+      ctx.beginPath();
+      ctx.moveTo(-6, 8); ctx.lineTo(-8 + step * 4, 17); ctx.lineTo(-10 + step * 6, 25);
+      ctx.moveTo(6, 8); ctx.lineTo(8 - step * 4, 17); ctx.lineTo(10 - step * 6, 25);
+      ctx.stroke();
+      ctx.fillStyle = "#d9c4fa";
+      ctx.fillRect(-14 + step * 6, 22, 10, 5);
+      ctx.fillRect(4 - step * 6, 22, 10, 5);
+
+      const armor = ctx.createLinearGradient(-14, -29, 15, 13);
+      armor.addColorStop(0, "#c9f8ff");
+      armor.addColorStop(0.5, "#6489d0");
+      armor.addColorStop(1, "#373e83");
+      ctx.fillStyle = armor;
+      ctx.strokeStyle = "#d9faff";
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(-11, -25); ctx.lineTo(-5, -29); ctx.lineTo(0, -23);
+      ctx.lineTo(6, -29); ctx.lineTo(12, -25); ctx.lineTo(14, 6);
+      ctx.lineTo(0, 13); ctx.lineTo(-14, 6); ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = "#f4d45d";
+      ctx.beginPath();
+      ctx.moveTo(-3, -19); ctx.lineTo(3, -12); ctx.lineTo(-2, -8);
+      ctx.lineTo(5, -1); ctx.lineTo(-7, -9); ctx.lineTo(-2, -13); ctx.closePath();
+      ctx.fill();
+
+      ctx.strokeStyle = "#38436d";
+      ctx.lineWidth = 6;
+      ctx.beginPath();
+      ctx.moveTo(-11, -21); ctx.lineTo(-19, -10 + step * 2); ctx.lineTo(-15, -1);
+      ctx.moveTo(11, -21); ctx.lineTo(19, -14 - attack * 6); ctx.lineTo(27, -10 - attack * 8);
+      ctx.stroke();
+      ctx.fillStyle = "#d9edff";
+      ctx.beginPath();
+      ctx.arc(-15, -1, 3.5, 0, Math.PI * 2);
+      ctx.arc(27, -10 - attack * 8, 3.5, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = "#633b72";
+      ctx.beginPath();
+      ctx.moveTo(-12, -48); ctx.quadraticCurveTo(-20, -40, -17, -23);
+      ctx.lineTo(-12, -18); ctx.lineTo(-11, -35);
+      ctx.moveTo(12, -48); ctx.quadraticCurveTo(20, -40, 17, -23);
+      ctx.lineTo(12, -18); ctx.lineTo(11, -35);
+      ctx.fill();
+      ctx.fillStyle = "#edbd99";
+      ctx.beginPath();
+      ctx.ellipse(0, -36, 8, 10, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "#31264f";
+      ctx.beginPath();
+      ctx.moveTo(-9, -38); ctx.quadraticCurveTo(-12, -53, 0, -53);
+      ctx.quadraticCurveTo(12, -53, 9, -38); ctx.lineTo(5, -43);
+      ctx.lineTo(0, -40); ctx.lineTo(-5, -43); ctx.closePath();
+      ctx.fill();
+      ctx.fillStyle = "#f8fbff";
+      ctx.beginPath();
+      ctx.ellipse(-3.5, -36, 1.7, 2.1, 0, 0, Math.PI * 2);
+      ctx.ellipse(3.5, -36, 1.7, 2.1, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "#394e8a";
+      ctx.beginPath();
+      ctx.arc(-3.5, -36, 0.8, 0, Math.PI * 2);
+      ctx.arc(3.5, -36, 0.8, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = "#9c566b";
+      ctx.lineWidth = 1.3;
+      ctx.beginPath();
+      ctx.moveTo(-2, -30); ctx.quadraticCurveTo(0, -28, 2, -30);
+      ctx.stroke();
+      ctx.fillStyle = "#f4d45d";
+      ctx.beginPath();
+      ctx.moveTo(-12, -48); ctx.lineTo(-9, -60); ctx.lineTo(-3, -52);
+      ctx.lineTo(0, -64); ctx.lineTo(4, -52); ctx.lineTo(10, -60);
+      ctx.lineTo(12, -48); ctx.closePath();
+      ctx.fill();
+      ctx.strokeStyle = "#fff2a1";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(-9, -48); ctx.lineTo(9, -48);
+      ctx.stroke();
+      ctx.strokeStyle = "#a8f5ff";
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.moveTo(31, 16); ctx.lineTo(35 + attack * 9, -54);
+      ctx.stroke();
+      ctx.strokeStyle = "#f6e980";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(31, 16); ctx.lineTo(35 + attack * 9, -54);
+      ctx.stroke();
+      ctx.fillStyle = "#e9fcff";
+      ctx.shadowColor = "#77eaff";
+      ctx.shadowBlur = 12;
+      ctx.beginPath();
+      ctx.moveTo(35 + attack * 9, -65); ctx.lineTo(30 + attack * 9, -55);
+      ctx.lineTo(37 + attack * 9, -52); ctx.lineTo(32 + attack * 9, -43);
+      ctx.lineTo(45 + attack * 9, -57); ctx.lineTo(39 + attack * 9, -59);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+    }
+
+    function drawDojoMasterFigure(enemy, animation) {
+      const step = enemy.moving ? Math.sin(animation * 0.9) : 0;
+      const attack = Math.min(1, (enemy.attackPose || 0) * 2.5);
+      ctx.save();
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+      ctx.rotate(-attack * 0.045);
+
+      ctx.strokeStyle = "#4b3b35";
+      ctx.lineWidth = 8;
+      ctx.beginPath();
+      ctx.moveTo(-5, 7); ctx.lineTo(-12 + step * 5, 17); ctx.lineTo(-18 + step * 6, 25);
+      ctx.moveTo(5, 7); ctx.lineTo(12 - step * 5, 17); ctx.lineTo(18 - step * 6, 25);
+      ctx.stroke();
+      ctx.fillStyle = "#302a2b";
+      ctx.beginPath();
+      ctx.roundRect(-24 + step * 6, 22, 13, 7, 3);
+      ctx.roundRect(11 - step * 6, 22, 13, 7, 3);
+      ctx.fill();
+
+      ctx.fillStyle = "#f4efe2";
+      ctx.beginPath();
+      ctx.moveTo(-13, -20); ctx.lineTo(-17, 7); ctx.lineTo(-8, 14);
+      ctx.lineTo(0, 9); ctx.lineTo(8, 14); ctx.lineTo(17, 7); ctx.lineTo(13, -20);
+      ctx.closePath();
+      ctx.fill();
+      ctx.strokeStyle = "#baaa8c";
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+      ctx.fillStyle = "#c9ba9d";
+      ctx.beginPath();
+      ctx.moveTo(-11, -21); ctx.lineTo(0, -6); ctx.lineTo(11, -21);
+      ctx.lineTo(6, -25); ctx.lineTo(0, -17); ctx.lineTo(-6, -25); ctx.closePath();
+      ctx.fill();
+      ctx.fillStyle = "#25252d";
+      ctx.fillRect(-14, -1, 28, 4);
+      ctx.beginPath();
+      ctx.moveTo(1, 1); ctx.lineTo(8, 11); ctx.lineTo(4, 13); ctx.lineTo(-1, 3);
+      ctx.closePath();
+      ctx.fill();
+      ctx.fillStyle = "#d7ba6b";
+      ctx.fillRect(-3, -2, 6, 6);
+
+      ctx.strokeStyle = "#f4efe2";
+      ctx.lineWidth = 7;
+      ctx.beginPath();
+      ctx.moveTo(-11, -17); ctx.lineTo(-19, -8 + step * 2); ctx.lineTo(-21, -1);
+      ctx.moveTo(11, -17); ctx.lineTo(19, -10 - attack * 8); ctx.lineTo(28 + attack * 8, -8 - attack * 6);
+      ctx.stroke();
+      ctx.fillStyle = "#edbd99";
+      ctx.beginPath();
+      ctx.arc(-21, -1, 3.5, 0, Math.PI * 2);
+      ctx.arc(28 + attack * 8, -8 - attack * 6, 3.5, 0, Math.PI * 2);
+      ctx.fill();
+      if (attack > 0) {
+        ctx.strokeStyle = "#ffe58b";
+        ctx.shadowColor = "#ffd76b";
+        ctx.shadowBlur = 13;
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        ctx.arc(34, -9, 15 + attack * 7, -1.6, 0.5);
+        ctx.stroke();
+      }
+
+      ctx.fillStyle = "#dfbd91";
+      ctx.beginPath();
+      ctx.ellipse(0, -31, 8, 10, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "#5b4034";
+      ctx.beginPath();
+      ctx.arc(0, -39, 8, Math.PI, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "#ead59e";
+      ctx.fillRect(-10, -34, 20, 3);
+      ctx.fillStyle = "#4b352d";
+      ctx.beginPath();
+      ctx.arc(0, -42, 3, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "#fff";
+      ctx.beginPath();
+      ctx.arc(3, -31, 1.4, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "#42312d";
+      ctx.beginPath();
+      ctx.arc(3.4, -31, 0.7, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = "#725047";
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(3, -25); ctx.lineTo(6, -26);
+      ctx.stroke();
+      ctx.restore();
+    }
+
     function drawEnemy(enemy) {
       const isBunnyBoss = enemy.type === "boss";
       const isLightningBoss = enemy.type === "lightningBoss";
@@ -4197,6 +4416,10 @@
         drawStormKingFigure(enemy, animation);
       } else if (enemy.type === "stormElite") {
         drawStormGuardFigure(enemy, animation);
+      } else if (enemy.type === "lightningBoss") {
+        drawLightningQueenFigure(enemy, animation);
+      } else if (enemy.type === "dojoMaster") {
+        drawDojoMasterFigure(enemy, animation);
       } else if (isHeavenlyEnemy) {
         drawFeatheredWings(animation, isHeavenlyBoss ? 1.18 : 0.92, true);
         drawHumanoidLimbs(animation, true);
@@ -4688,10 +4911,25 @@
           continue;
         }
         ctx.fillStyle = projectile.type === "stormBolt" ? "#74efff" :
+          projectile.type === "godlikeFist" ? "#ffe58b" :
           projectile.heavenly || projectile.type === "heavenlyArrow" || projectile.type === "kunai" ? "#ffe58b" :
           projectile.type === "arrow" ? "#68452d" :
           projectile.type === "lightning" ? "#66ecff" : "#ee8d32";
-        if (projectile.type === "lightning" || projectile.type === "stormBolt") {
+        if (projectile.type === "godlikeFist") {
+          ctx.shadowColor = "#ffd76b";
+          ctx.shadowBlur = 18;
+          ctx.beginPath();
+          ctx.arc(0, 0, 9, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.strokeStyle = "#fff6c2";
+          ctx.lineWidth = 3;
+          ctx.beginPath();
+          ctx.arc(0, 0, 13, -1.2, 1.2);
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.moveTo(-20, 0); ctx.lineTo(-8, 0);
+          ctx.stroke();
+        } else if (projectile.type === "lightning" || projectile.type === "stormBolt") {
           ctx.strokeStyle = "#fff27a";
           ctx.lineWidth = 5;
           ctx.shadowColor = "#62dfff";
@@ -4770,10 +5008,11 @@
         const distance = Math.hypot(dx, dy) || 1;
         enemy.facing = dx >= 0 ? 1 : -1;
         const isRanged = ["boss", "fighter", "lightningBoss", "heavenlyBow", "dojoMaster", "stormElite", "stormKing"].includes(enemy.type);
-        const speed = isRanged ? 28 : enemy.type === "big" ? 38 :
+        const speed = enemy.type === "dojoMaster" ? 42 : isRanged ? 28 : enemy.type === "big" ? 38 :
           enemy.type === "armoredGorilla" || enemy.type === "gorillaEmperor" ? 30 :
             enemy.type === "gorilla" ? 36 : 48;
-        const keepDistance = ["dojoMaster", "stormElite", "stormKing"].includes(enemy.type) ? 140 : 28;
+        const keepDistance = enemy.type === "dojoMaster" ? 48 :
+          ["stormElite", "stormKing"].includes(enemy.type) ? 140 : 28;
         enemy.moving = !stunned && distance > keepDistance;
         if (enemy.moving) {
           enemy.x += dx / distance * speed * delta;
@@ -4788,23 +5027,39 @@
             const aimX = player.x - enemy.x;
             const aimY = player.y - enemy.y;
             const aimLength = Math.hypot(aimX, aimY) || 1;
-            const isLightning = ["fighter", "lightningBoss", "stormElite", "stormKing"].includes(enemy.type);
-            const isDojoUltimate = enemy.type === "dojoMaster" && enemy.ultimateTimer <= 0;
-            projectiles.push({
-              x: enemy.x, y: enemy.y - 15,
-              vx: aimX / aimLength * (isLightning ? 155 : enemy.type === "heavenlyBow" ? 190 : 145),
-              vy: aimY / aimLength * (isLightning ? 155 : enemy.type === "heavenlyBow" ? 190 : 145),
-              damage: enemy.type === "dojoMaster" ? isDojoUltimate ? 85 : 75 :
-                isLightning || enemy.type === "heavenlyBow" ? enemy.attackDamage : 20,
-              type: enemy.type === "heavenlyBow" || enemy.type === "dojoMaster"
-                ? "heavenlyArrow" : isLightning ? "lightning" : "carrot",
-              life: 4
-            });
-            enemy.attackTimer = ["lightningBoss", "stormElite", "stormKing"].includes(enemy.type) ? 2.2 :
-              enemy.type === "heavenlyBow" ? 1.8 : enemy.type === "dojoMaster" ? 2.8 : 2.5;
-            if (isDojoUltimate) enemy.ultimateTimer = 8;
+            if (enemy.type === "dojoMaster") {
+              if (enemy.ultimateTimer <= 0) {
+                if (distance < 190) takeHit(85);
+                impactEffects.push({ x: enemy.x, y: enemy.y - 18, life: 0.36, color: "#ffe58b" });
+                cameraShake = Math.max(cameraShake, 0.3);
+                enemy.ultimateTimer = 8;
+                enemy.attackTimer = 2.8;
+              } else if (distance < 82) {
+                takeHit(enemy.attackDamage);
+                impactEffects.push({ x: player.x, y: player.y - 12, life: 0.36, color: "#ffe58b" });
+                enemy.attackTimer = 1.5;
+              } else {
+                projectiles.push({
+                  x: enemy.x, y: enemy.y - 15,
+                  vx: aimX / aimLength * 205, vy: aimY / aimLength * 205,
+                  damage: 75, type: "godlikeFist", life: 3
+                });
+                enemy.attackTimer = 2.5;
+              }
+            } else {
+              const isLightning = ["fighter", "lightningBoss", "stormElite", "stormKing"].includes(enemy.type);
+              projectiles.push({
+                x: enemy.x, y: enemy.y - 15,
+                vx: aimX / aimLength * (isLightning ? 155 : enemy.type === "heavenlyBow" ? 190 : 145),
+                vy: aimY / aimLength * (isLightning ? 155 : enemy.type === "heavenlyBow" ? 190 : 145),
+                damage: isLightning || enemy.type === "heavenlyBow" ? enemy.attackDamage : 20,
+                type: enemy.type === "heavenlyBow" ? "heavenlyArrow" : isLightning ? "lightning" : "carrot",
+                life: 4
+              });
+              enemy.attackTimer = ["lightningBoss", "stormElite", "stormKing"].includes(enemy.type) ? 2.2 :
+                enemy.type === "heavenlyBow" ? 1.8 : 2.5;
+            }
           }
-          if (enemy.type === "dojoMaster" && distance < 30) takeHit(enemy.attackDamage);
           if (gameEnded) return;
         } else if (enemy.type === "gorillaEmperor") {
           enemy.hornTimer -= delta;
