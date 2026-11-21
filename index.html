@@ -904,6 +904,16 @@
       { source: "Monkey Horn", name: "Heavenly Horn" }
     ];
     const rarityOrder = ["Common", "Rare", "Epic", "Legendary", "Mythic", "Secret", "Godlike"];
+    const rarityWeights = { Rare: 1, Epic: 0.5, Legendary: 0.25, Mythic: 0.125, Secret: 0.0625, Godlike: 0.03125 };
+    const rarityColors = {
+      Common: "#70777d",
+      Rare: "#2672cf",
+      Epic: "#8744bd",
+      Legendary: "#d18422",
+      Mythic: "#c33b68",
+      Secret: "#6a4ac7",
+      Godlike: "#bd6c18"
+    };
     for (const recipe of heavenlyWeaponRecipes) {
       const source = weapons.find((item) => item.name === recipe.source);
       const rarity = rarityOrder[Math.min(rarityOrder.length - 1, rarityOrder.indexOf(source.rarity) + 1)];
@@ -1123,9 +1133,13 @@
         (item.type !== "monkeyHorn" || monkeyHornUnlocked));
       betterWeapons.push(...weapons.filter((item) =>
         (item.heavenly || item.type === "combat") && isWeaponUnlocked(item)));
+      const betterWeightTotal = betterWeapons.reduce((total, item) => total + rarityWeights[item.rarity], 0);
       return [
         ...commonWeapons.map((item) => ({ name: item.name, chance: (100 - betterChance) / commonWeapons.length })),
-        ...betterWeapons.map((item) => ({ name: item.name, chance: betterChance / betterWeapons.length }))
+        ...betterWeapons.map((item) => ({
+          name: item.name,
+          chance: betterChance * rarityWeights[item.rarity] / betterWeightTotal
+        }))
       ];
     }
 
@@ -4363,8 +4377,7 @@
         wheelCtx.moveTo(0, 0);
         wheelCtx.arc(0, 0, radius, start, end);
         wheelCtx.closePath();
-        wheelCtx.fillStyle = item.rarity === "Common" ? "#858b92" :
-          item.rarity === "Rare" ? "#337fca" : "#8a45ba";
+        wheelCtx.fillStyle = rarityColors[item.rarity];
         wheelCtx.fill();
         wheelCtx.strokeStyle = "#fff";
         wheelCtx.lineWidth = 2;
